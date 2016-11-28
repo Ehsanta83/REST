@@ -31,6 +31,9 @@ import java.util.stream.Stream;
 
 /**
  * application for instance the agent-component
+ *
+ * @see https://docs.oracle.com/cd/E24329_01/web.1211/e24983/configure.htm#RESTF179
+ * @see https://docs.oracle.com/cd/E24329_01/web.1211/e24983/configure.htm#RESTF182
  */
 public final class CApplication extends Application
 {
