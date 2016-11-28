@@ -60,12 +60,12 @@ import java.util.stream.Stream;
  */
 @Singleton
 @Path( "/agent/{id}" )
-public final class CProvider
+public final class CAgentProvider
 {
     /**
      * singleton instance
      */
-    public static final CProvider INSTANCE = new CProvider();
+    public static final CAgentProvider INSTANCE = new CAgentProvider();
     /**
      * function to format agent identifier
      */
@@ -78,7 +78,7 @@ public final class CProvider
     /**
      * ctor
      */
-    private CProvider()
+    private CAgentProvider()
     {}
 
     // --- agent register calls --------------------------------------------------------------------------------------------------------------------------------
@@ -90,7 +90,7 @@ public final class CProvider
      * @param p_agent agent object
      * @return self reference
      */
-    public final CProvider register( final String p_id, final IAgent<?> p_agent )
+    public final CAgentProvider register( final String p_id, final IAgent<?> p_agent )
     {
         m_agents.put( m_formater.apply( p_id ), p_agent );
         return this;
@@ -102,7 +102,7 @@ public final class CProvider
      * @param p_id agent name / id (case insensitive )
      * @return self refrence
      */
-    public final CProvider unregister( final String p_id )
+    public final CAgentProvider unregister( final String p_id )
     {
         m_agents.remove( m_formater.apply( p_id ) );
         return this;
@@ -114,7 +114,7 @@ public final class CProvider
      * @param p_agent agent object
      * @return self refrence
      */
-    public final CProvider unregister( final IAgent<?> p_agent )
+    public final CAgentProvider unregister( final IAgent<?> p_agent )
     {
         m_agents.inverse().remove( p_agent );
         return this;

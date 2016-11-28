@@ -25,6 +25,8 @@ package org.lightjason.rest;
 
 import javax.ws.rs.core.Application;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 
 /**
@@ -36,6 +38,6 @@ public final class CApplication extends Application
     @Override
     public final Set<Object> getSingletons()
     {
-        return super.getSingletons();
+        return Stream.of( CAgentProvider.class ).collect( Collectors.toSet() );
     }
 }
