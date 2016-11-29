@@ -23,24 +23,37 @@
 
 package org.lightjason.rest;
 
-import javax.ws.rs.core.Application;
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import org.glassfish.hk2.utilities.binding.AbstractBinder;
+import org.glassfish.jersey.server.ResourceConfig;
+
+import java.text.MessageFormat;
 
 
 /**
  * application for instance the agent-component
- *
- * @see https://docs.oracle.com/cd/E24329_01/web.1211/e24983/configure.htm#RESTF179
- * @see https://docs.oracle.com/cd/E24329_01/web.1211/e24983/configure.htm#RESTF182
  */
-public final class CApplication extends Application
+public final class CApplication extends ResourceConfig
 {
 
-    @Override
-    public final Set<Object> getSingletons()
+    /**
+     * ctor
+     *
+     */
+    public CApplication()
     {
-        return Stream.of( CAgentProvider.class ).collect( Collectors.toSet() );
+        this.register( new AbstractBinder()
+        {
+            @Override
+            protected final void configure()
+            {
+                this.bind( CAgentProvider.INSTANCE ).to( CAgentProvider.class );
+            }
+        } );
+        this.packages(
+            true,
+            MessageFormat.format( "{0}.{1}", CCommon.PACKAGEROOT, "container" ),
+            "com.fasterxml.jackson.jaxrs.json"
+        );
     }
+
 }
