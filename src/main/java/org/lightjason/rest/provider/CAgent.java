@@ -46,11 +46,14 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 
@@ -58,7 +61,7 @@ import java.util.stream.Stream;
  * singleton webservice provider to control
  * an agent as XML and JSON request
  */
-@Path( "/agent/{id}" )
+@Path( "/agent" )
 public final class CAgent implements IProvider
 {
     /**
@@ -98,13 +101,26 @@ public final class CAgent implements IProvider
     // --- api calls -------------------------------------------------------------------------------------------------------------------------------------------
 
     /**
+     * returns a list of all registered agent names
+     *
+     * @return agent name list
+     */
+    @GET
+    @Path( "/list" )
+    @Produces( MediaType.APPLICATION_JSON )
+    public final Object view()
+    {
+        return m_agents.keySet();
+    }
+
+    /**
      * rest-api call to get current state of the agent
      *
      * @param p_id agent identifier
      * @return agent object or http error
      */
     @GET
-    @Path( "/view" )
+    @Path( "/{id}/view" )
     @Produces( MediaType.APPLICATION_JSON )
     public final Object view( @PathParam( "id" ) final String p_id )
     {
@@ -115,12 +131,44 @@ public final class CAgent implements IProvider
     }
 
     /**
+     * executes the cycle for all agents
+     * @return response
+     */
+    @GET
+    @Path( "/cycle" )
+    public final Response cycle()
+    {
+        final Set<String> l_result = m_agents
+            .values()
+            .parallelStream()
+            .map( i -> {
+                try
+                {
+                    i.call();
+                    return null;
+                }
+                catch ( final Exception l_exception )
+                {
+                    return l_exception.getMessage();
+                }
+            } )
+            .filter( Objects::nonNull )
+            .filter( String::isEmpty )
+            .collect( Collectors.toSet() );
+
+        return l_result.isEmpty()
+              ? Response.status( Response.Status.OK ).build()
+              : Response.status( Response.Status.CONFLICT ).entity( MessageFormat.format( "{0}", l_result ) ).build();
+    }
+
+
+    /**
      * rest-api call to run a cycle
      *
      * @return response
      */
     @GET
-    @Path( "/cycle" )
+    @Path( "/{id}/cycle" )
     public final Response cycle( @PathParam( "id" ) final String p_id )
     {
         final IAgent<?> l_agent = m_agents.get( m_formater.apply( p_id ) );
@@ -147,7 +195,7 @@ public final class CAgent implements IProvider
      * @return http response
      */
     @GET
-    @Path( "/sleep" )
+    @Path( "/{id}/sleep" )
     public final Response sleep( @PathParam( "id" ) final String p_id, @QueryParam( "time" ) final long p_time )
     {
         return this.sleep( p_id, p_time, "" );
@@ -162,7 +210,7 @@ public final class CAgent implements IProvider
      * @return http response
      */
     @POST
-    @Path( "/sleep" )
+    @Path( "/{id}/sleep" )
     @Consumes( MediaType.TEXT_PLAIN )
     public final Response sleep( @PathParam( "id" ) final String p_id, @QueryParam( "time" ) final long p_time, final String p_data )
     {
@@ -197,7 +245,7 @@ public final class CAgent implements IProvider
      * @return http response
      */
     @GET
-    @Path( "/wakeup" )
+    @Path( "/{id}/wakeup" )
     public final Response wakeup( @PathParam( "id" ) final String p_id )
     {
         return this.wakeup( p_id, "" );
@@ -211,7 +259,7 @@ public final class CAgent implements IProvider
      * @return http response
      */
     @POST
-    @Path( "/wakeup" )
+    @Path( "/{id}/wakeup" )
     @Consumes( MediaType.TEXT_PLAIN )
     public final Response wakeup( @PathParam( "id" ) final String p_id, final String p_data )
     {
@@ -247,7 +295,7 @@ public final class CAgent implements IProvider
      * @return http response
      */
     @POST
-    @Path( "/belief/{action}" )
+    @Path( "/{id}/belief/{action}" )
     @Consumes( MediaType.TEXT_PLAIN )
     public final Response addbelief( @PathParam( "id" ) final String p_id, @PathParam( "action" ) final String p_action, final String p_literal )
     {
@@ -294,7 +342,7 @@ public final class CAgent implements IProvider
      * @return http response
      */
     @POST
-    @Path( "/trigger/{trigger}/immediately" )
+    @Path( "/{id}/trigger/{trigger}/immediately" )
     @Consumes( MediaType.TEXT_PLAIN )
     public final Response triggerimmediately( @PathParam( "id" ) final String p_id, @PathParam( "trigger" ) final String p_trigger, final String p_literal )
     {
@@ -310,7 +358,7 @@ public final class CAgent implements IProvider
      * @return http response
      */
     @POST
-    @Path( "/trigger/{trigger}" )
+    @Path( "/{id}/trigger/{trigger}" )
     @Consumes( MediaType.TEXT_PLAIN )
     public final Response trigger( @PathParam( "id" ) final String p_id, @PathParam( "trigger" ) final String p_trigger, final String p_literal )
     {

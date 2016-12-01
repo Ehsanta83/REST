@@ -21,6 +21,8 @@
 
 The component defines a set of URL pattern to control an agent:
 
+* ```/agent/list``` (HTTP-GET) returns a list of all registered agent names
+* ```/agent/cycle``` (HTTP-GET) executes the cycle of all registered agents
 * ```/agent/<agent identifier>/cycle``` (HTTP-GET) executes the agent cycle
 * ```/agent/<agent identifier>/view``` (HTTP-GET) returns the current state of the agent
 * ```/agent/<agent identifier>/sleep?time=``` (HTTP-GET) pushs the agent into sleeping state for a defined time (time parameter is optional, if is not set the time is unlimited)
