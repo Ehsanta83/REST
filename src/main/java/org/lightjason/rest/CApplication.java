@@ -24,7 +24,6 @@
 package org.lightjason.rest;
 
 import org.glassfish.jersey.server.ResourceConfig;
-
 import java.text.MessageFormat;
 
 
