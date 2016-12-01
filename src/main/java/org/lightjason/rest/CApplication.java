@@ -23,7 +23,6 @@
 
 package org.lightjason.rest;
 
-import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.glassfish.jersey.server.ResourceConfig;
 
 import java.text.MessageFormat;
@@ -37,18 +36,10 @@ public final class CApplication extends ResourceConfig
 
     /**
      * ctor
-     *
      */
     public CApplication()
     {
-        this.register( new AbstractBinder()
-        {
-            @Override
-            protected final void configure()
-            {
-                this.bind( CAgentProvider.INSTANCE ).to( CAgentProvider.class );
-            }
-        } );
+        this.register( CAgentProvider.INSTANCE );
         this.packages(
             true,
             MessageFormat.format( "{0}.{1}", CCommon.PACKAGEROOT, "container" ),
