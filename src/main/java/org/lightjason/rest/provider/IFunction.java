@@ -21,7 +21,7 @@
  * @endcond
  */
 
-package org.lightjason.rest;
+package org.lightjason.rest.provider;
 
 /**
  * functional interface for function that can throw errors

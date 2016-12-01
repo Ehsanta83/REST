@@ -21,39 +21,16 @@
  * @endcond
  */
 
-package org.lightjason.rest;
+package org.lightjason.rest.provider;
 
-import org.glassfish.jersey.server.ResourceConfig;
 import org.lightjason.agentspeak.agent.IAgent;
-import org.lightjason.rest.provider.CAgent;
-import org.lightjason.rest.provider.IProvider;
-
-import java.text.MessageFormat;
 
 
 /**
- * application for instance the agent-component
+ * provider interface
  */
-public final class CApplication extends ResourceConfig
+public interface IProvider
 {
-    /**
-     * agent provider
-     */
-    private final IProvider m_agentsbyname = new CAgent();
-
-    /**
-     * ctor
-     */
-    public CApplication()
-    {
-        this.register( m_agentsbyname );
-        this.packages(
-            true,
-            MessageFormat.format( "{0}.{1}", CCommon.PACKAGEROOT, "container" ),
-            "com.fasterxml.jackson.jaxrs.json"
-        );
-    }
-
 
     /**
      * register an agent with a name
@@ -62,34 +39,22 @@ public final class CApplication extends ResourceConfig
      * @param p_agent agent object
      * @return self reference
      */
-    public final CApplication register( final String p_id, final IAgent<?> p_agent )
-    {
-        m_agentsbyname.register( p_id, p_agent );
-        return this;
-    }
+    IProvider register( final String p_id, final IAgent<?> p_agent );
 
     /**
      * unregister agent by the name
      *
      * @param p_id agent name / id (case insensitive )
-     * @return self refrence
+     * @return self reference
      */
-    public final CApplication unregister( final String p_id )
-    {
-        m_agentsbyname.unregister( p_id );
-        return this;
-    }
+    IProvider unregister( final String p_id );
 
     /**
      * unregister agent by the objct
      *
      * @param p_agent agent object
-     * @return self refrence
+     * @return self reference
      */
-    public final CApplication unregister( final IAgent<?> p_agent )
-    {
-        m_agentsbyname.unregister( p_agent );
-        return this;
-    }
+    IProvider unregister( final IAgent<?> p_agent );
 
 }

@@ -65,7 +65,7 @@ import java.util.logging.Logger;
 /**
  * class for any helper calls
  */
-final class CCommon
+public final class CCommon
 {
     /**
      * package name

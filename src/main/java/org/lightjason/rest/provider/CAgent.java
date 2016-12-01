@@ -21,7 +21,7 @@
  * @endcond
  */
 
-package org.lightjason.rest;
+package org.lightjason.rest.provider;
 
 
 import com.google.common.collect.BiMap;
@@ -34,9 +34,9 @@ import org.lightjason.agentspeak.language.ILiteral;
 import org.lightjason.agentspeak.language.ITerm;
 import org.lightjason.agentspeak.language.instantiable.plan.trigger.CTrigger;
 import org.lightjason.agentspeak.language.instantiable.plan.trigger.ITrigger;
+import org.lightjason.rest.CCommon;
 import org.lightjason.rest.inspector.CAgentInspector;
 
-import javax.inject.Singleton;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -58,14 +58,9 @@ import java.util.stream.Stream;
  * singleton webservice provider to control
  * an agent as XML and JSON request
  */
-@Singleton
 @Path( "/agent/{id}" )
-public final class CAgentProvider
+public final class CAgent implements IProvider
 {
-    /**
-     * singleton instance
-     */
-    public static final CAgentProvider INSTANCE = new CAgentProvider();
     /**
      * function to format agent identifier
      */
@@ -75,46 +70,26 @@ public final class CAgentProvider
      **/
     private final BiMap<String, IAgent<?>> m_agents = Maps.synchronizedBiMap( HashBiMap.create() );
 
-    /**
-     * ctor
-     */
-    private CAgentProvider()
-    {}
 
     // --- agent register calls --------------------------------------------------------------------------------------------------------------------------------
 
-    /**
-     * register an agent with a name
-     *
-     * @param p_id agent name / id (case-insensitive)
-     * @param p_agent agent object
-     * @return self reference
-     */
-    public final CAgentProvider register( final String p_id, final IAgent<?> p_agent )
+
+    @Override
+    public final IProvider register( final String p_id, final IAgent<?> p_agent )
     {
         m_agents.put( m_formater.apply( p_id ), p_agent );
         return this;
     }
 
-    /**
-     * unregister agent by the name
-     *
-     * @param p_id agent name / id (case insensitive )
-     * @return self refrence
-     */
-    public final CAgentProvider unregister( final String p_id )
+    @Override
+    public final IProvider unregister( final String p_id )
     {
         m_agents.remove( m_formater.apply( p_id ) );
         return this;
     }
 
-    /**
-     * unregister agent by the objct
-     *
-     * @param p_agent agent object
-     * @return self refrence
-     */
-    public final CAgentProvider unregister( final IAgent<?> p_agent )
+    @Override
+    public final IProvider unregister( final IAgent<?> p_agent )
     {
         m_agents.inverse().remove( p_agent );
         return this;
