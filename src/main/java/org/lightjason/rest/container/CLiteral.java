@@ -87,8 +87,8 @@ public final class CLiteral implements ITerm
         if ( p_term instanceof ILiteral )
             return new CLiteral( p_term.raw() );
 
-        if ( p_term instanceof IVariable )
-            return new CVariable<>( p_term.raw() );
+        if ( p_term instanceof IVariable<?> )
+            return new CVariable( p_term.functor(), p_term.raw() );
 
         return new CRaw<>( p_term.raw() );
     }

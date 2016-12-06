@@ -23,15 +23,13 @@
 
 package org.lightjason.rest.container;
 
-import org.lightjason.agentspeak.language.variable.IVariable;
-
 import javax.xml.bind.annotation.XmlElement;
 
 
 /**
  * variable container
  */
-public final class CVariable<T> implements ITerm
+public final class CVariable implements ITerm
 {
     /**
      * functor
@@ -42,22 +40,17 @@ public final class CVariable<T> implements ITerm
      * value
      */
     @XmlElement( name = "value" )
-    private final T m_value;
-    /**
-     * synchronized flag
-     */
-    @XmlElement( name = "synchronized" )
-    private final boolean m_synchronized;
+    private final Object m_value;
 
     /**
      * ctor
      *
-     * @param p_variable variable
+     * @param p_functor functor
+     * @param p_value value
      */
-    public CVariable( final IVariable<?> p_variable )
+    public CVariable( final String p_functor, final Object p_value )
     {
-        m_functor = p_variable.functor();
-        m_value = p_variable.raw();
-        m_synchronized = p_variable.mutex();
+        m_functor = p_functor;
+        m_value = p_value;
     }
 }

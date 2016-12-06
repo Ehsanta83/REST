@@ -73,9 +73,9 @@ public final class CAgentInspector implements IAgentInspector
     }
 
     @Override
-    public final void inspectplans( final Stream<ImmutableTriple<IPlan, Long, Long>> p_value
-    )
+    public final void inspectplans( final Stream<ImmutableTriple<IPlan, Long, Long>> p_value )
     {
+        p_value.sequential().forEach( m_node::setPlan );
     }
 
     @Override
@@ -86,7 +86,7 @@ public final class CAgentInspector implements IAgentInspector
     @Override
     public final void inspectrunningplans( final Stream<ILiteral> p_value )
     {
-        p_value.sequential().sorted().forEach( i -> m_node.setRunningplan( i.toString() ) );
+        p_value.sequential().sorted().forEach( m_node::setRunningplan );
     }
 
     @Override

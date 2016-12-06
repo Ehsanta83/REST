@@ -23,6 +23,7 @@
 
 package org.lightjason.rest.container;
 
+import org.apache.commons.lang3.tuple.ImmutableTriple;
 import org.lightjason.agentspeak.language.ILiteral;
 
 import javax.xml.bind.annotation.XmlElement;
@@ -44,6 +45,10 @@ public final class CAgentContainer<T> implements IAgentContainer
      * storage element
      */
     private final Map<String, Object> m_storage = new HashMap<>();
+    /**
+     * existing plans
+     */
+    private final List<IPlan> m_plans = new ArrayList<>();
     /**
      * running plans
      */
@@ -80,7 +85,7 @@ public final class CAgentContainer<T> implements IAgentContainer
      * @param p_cycle cycle
      * @return self reference
      */
-    public final CAgentContainer setCycle( final long p_cycle )
+    public final CAgentContainer<T> setCycle( final long p_cycle )
     {
         m_cycle = p_cycle;
         return this;
@@ -101,7 +106,7 @@ public final class CAgentContainer<T> implements IAgentContainer
      * @param p_sleeping sleeping value
      * @return self reference
      */
-    public final CAgentContainer setSleeping( final long p_sleeping )
+    public final CAgentContainer<T> setSleeping( final long p_sleeping )
     {
         m_sleeping = p_sleeping < 0 ? 0 : p_sleeping;
         return this;
@@ -122,7 +127,7 @@ public final class CAgentContainer<T> implements IAgentContainer
      * @param p_id name / id
      * @return self reference
      */
-    public final CAgentContainer setID( final T p_id )
+    public final CAgentContainer<T> setID( final T p_id )
     {
         m_id = p_id;
         return this;
@@ -146,7 +151,7 @@ public final class CAgentContainer<T> implements IAgentContainer
      * @param p_belief belief as string
      * @return self reference
      */
-    public final CAgentContainer setBelief( final ILiteral p_belief )
+    public final CAgentContainer<T> setBelief( final ILiteral p_belief )
     {
         m_belief.add( new CLiteral( p_belief ) );
         return this;
@@ -158,7 +163,7 @@ public final class CAgentContainer<T> implements IAgentContainer
      * @return list with running plans
      */
     @XmlElementWrapper( name = "runningplans" )
-    @XmlElement( name = "plan" )
+    @XmlElement( name = "runningplan" )
     public final List<String> getRunningplan()
     {
         return m_runningplan;
@@ -170,9 +175,33 @@ public final class CAgentContainer<T> implements IAgentContainer
      * @param p_plan plan
      * @return self reference
      */
-    public final CAgentContainer setRunningplan( final String p_plan )
+    public final CAgentContainer<T> setRunningplan( final ILiteral p_plan )
     {
-        m_runningplan.add( p_plan );
+        m_runningplan.add( p_plan.toString() );
+        return this;
+    }
+
+    /**
+     * all existings plans
+     *
+     * @return plan list
+     */
+    @XmlElementWrapper( name = "plans" )
+    @XmlElement( name = "plan" )
+    public final List<IPlan> getPlan()
+    {
+        return m_plans;
+    }
+
+    /**
+     * adds a plan
+     *
+     * @param p_plan plan object
+     * @return self reference
+     */
+    public final CAgentContainer<T> setPlan( final ImmutableTriple<org.lightjason.agentspeak.language.instantiable.plan.IPlan, Long, Long> p_plan )
+    {
+        m_plans.add( new CPlan( p_plan.getLeft(), p_plan.getMiddle(), p_plan.getMiddle() ) );
         return this;
     }
 
@@ -192,7 +221,7 @@ public final class CAgentContainer<T> implements IAgentContainer
      * @param p_value storage entry
      * @return self reference
      */
-    public final CAgentContainer setStorage( final Map.Entry<String, ?> p_value )
+    public final CAgentContainer<T> setStorage( final Map.Entry<String, ?> p_value )
     {
         m_storage.put( p_value.getKey(), p_value.getValue() );
         return this;
