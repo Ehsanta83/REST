@@ -21,83 +21,75 @@
  * @endcond
  */
 
-package org.lightjason.rest.inspector;
+package org.lightjason.rest.container;
 
-import org.apache.commons.lang3.tuple.ImmutableTriple;
 import org.lightjason.agentspeak.language.ILiteral;
-import org.lightjason.agentspeak.language.instantiable.plan.IPlan;
-import org.lightjason.agentspeak.language.instantiable.rule.IRule;
-import org.lightjason.rest.container.CAgentContainer;
-import org.lightjason.rest.container.IAgentContainer;
+import org.lightjason.agentspeak.language.variable.IVariable;
 
-import java.util.Map;
-import java.util.stream.Stream;
+import javax.xml.bind.annotation.XmlElement;
+import java.util.List;
+import java.util.stream.Collectors;
 
 
 /**
- * inspector of an agent
+ * literal container
  */
-public final class CAgentInspector implements IAgentInspector
+public final class CLiteral implements ITerm
 {
     /**
-     * export agent object
+     * functor
      */
-    private final CAgentContainer<String> m_node = new CAgentContainer<>();
+    @XmlElement( name = "literal" )
+    private final String m_functor;
+    /**
+     * parallel flag
+     */
+    @XmlElement( name = "parallel" )
+    private final boolean m_parallel;
+    /**
+     * negated flag
+     */
+    @XmlElement( name = "negated" )
+    private final boolean m_negated;
+    /**
+     * literal values
+     */
+    @XmlElement( name = "values" )
+    private final List<ITerm> m_value;
+    /**
+     * annotation values
+     */
+    @XmlElement( name = "annotation" )
+    private final List<ITerm> m_annotation;
 
     /**
      * ctor
      *
-     * @param p_id agent id
+     * @param p_literal literal
      */
-    public CAgentInspector( final String p_id )
+    public CLiteral( final ILiteral p_literal )
     {
-        m_node.setID( p_id );
+        m_functor = p_literal.functor();
+        m_parallel = p_literal.hasAt();
+        m_negated = p_literal.negated();
+        m_value = p_literal.values().map( CLiteral::generate ).collect( Collectors.toList() );
+        m_annotation = p_literal.annotations().map( CLiteral::new ).collect( Collectors.toList() );
     }
 
-    @Override
-    public final void inspectsleeping( final long p_value )
+    /**
+     * generates the container elements
+     *
+     * @param p_term term
+     * @return container term element
+     */
+    private static ITerm generate( final org.lightjason.agentspeak.language.ITerm p_term )
     {
-        m_node.setSleeping( p_value );
-    }
+        if ( p_term instanceof ILiteral )
+            return new CLiteral( p_term.raw() );
 
-    @Override
-    public final void inspectcycle( final long p_value )
-    {
-        m_node.setCycle( p_value );
-    }
+        if ( p_term instanceof IVariable )
+            return new CVariable<>( p_term.raw() );
 
-    @Override
-    public final void inspectbelief( final Stream<ILiteral> p_value )
-    {
-        p_value.sequential().sorted().forEach( m_node::setBelief );
-    }
-
-    @Override
-    public final void inspectplans( final Stream<ImmutableTriple<IPlan, Long, Long>> p_value
-    )
-    {
-    }
-
-    @Override
-    public final void inspectrules( final Stream<IRule> p_value )
-    {
-    }
-
-    @Override
-    public final void inspectrunningplans( final Stream<ILiteral> p_value )
-    {
-        p_value.sequential().sorted().forEach( i -> m_node.setRunningplan( i.toString() ) );
-    }
-
-    @Override
-    public final void inspectstorage( final Stream<? extends Map.Entry<String, ?>> p_value )
-    {
-        p_value.sequential().sorted().forEach( m_node::setStorage );
-    }
-
-    @Override
-    public final IAgentContainer get()
-    {
-        return m_node;
+        return new CRaw<>( p_term.raw() );
     }
 }

@@ -23,6 +23,8 @@
 
 package org.lightjason.rest.container;
 
+import org.lightjason.agentspeak.language.ILiteral;
+
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -49,7 +51,7 @@ public final class CAgentContainer<T> implements IAgentContainer
     /**
      * belief as strings
      */
-    private final List<String> m_belief = new ArrayList<>();
+    private final List<ITerm> m_belief = new ArrayList<>();
     /**
      * cycle
      */
@@ -133,7 +135,7 @@ public final class CAgentContainer<T> implements IAgentContainer
      */
     @XmlElementWrapper( name = "beliefs" )
     @XmlElement( name = "belief" )
-    public final List<String> getBelief()
+    public final List<ITerm> getBelief()
     {
         return m_belief;
     }
@@ -144,9 +146,9 @@ public final class CAgentContainer<T> implements IAgentContainer
      * @param p_belief belief as string
      * @return self reference
      */
-    public final CAgentContainer setBelief( final String p_belief )
+    public final CAgentContainer setBelief( final ILiteral p_belief )
     {
-        m_belief.add( p_belief );
+        m_belief.add( new CLiteral( p_belief ) );
         return this;
     }
 
