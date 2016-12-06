@@ -69,7 +69,7 @@ public final class CAgentInspector implements IAgentInspector
     @Override
     public final void inspectbelief( final Stream<ILiteral> p_value )
     {
-        p_value.forEach( i -> m_node.setBelief( i.toString() ) );
+        p_value.sequential().sorted().forEach( i -> m_node.setBelief( i.toString() ) );
     }
 
     @Override
@@ -86,13 +86,13 @@ public final class CAgentInspector implements IAgentInspector
     @Override
     public final void inspectrunningplans( final Stream<ILiteral> p_value )
     {
-        p_value.forEach( i -> m_node.setRunningplan( i.toString() ) );
+        p_value.sequential().sorted().forEach( i -> m_node.setRunningplan( i.toString() ) );
     }
 
     @Override
     public final void inspectstorage( final Stream<? extends Map.Entry<String, ?>> p_value )
     {
-        p_value.forEach( m_node::setStorage );
+        p_value.sequential().sorted().forEach( m_node::setStorage );
     }
 
     @Override
