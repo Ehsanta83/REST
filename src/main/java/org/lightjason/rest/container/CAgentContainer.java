@@ -52,7 +52,7 @@ public final class CAgentContainer<T> implements IAgentContainer
     /**
      * running plans
      */
-    private final List<String> m_runningplan = new ArrayList<>();
+    private final List<ITerm> m_runningplan = new ArrayList<>();
     /**
      * belief as strings
      */
@@ -164,7 +164,7 @@ public final class CAgentContainer<T> implements IAgentContainer
      */
     @XmlElementWrapper( name = "runningplans" )
     @XmlElement( name = "runningplan" )
-    public final List<String> getRunningplan()
+    public final List<ITerm> getRunningplan()
     {
         return m_runningplan;
     }
@@ -174,10 +174,11 @@ public final class CAgentContainer<T> implements IAgentContainer
      *
      * @param p_plan plan
      * @return self reference
+     * @bug fix
      */
     public final CAgentContainer<T> setRunningplan( final ILiteral p_plan )
     {
-        m_runningplan.add( p_plan.toString() );
+        //m_runningplan.add( new CLiteral( p_plan ) );
         return this;
     }
 

@@ -24,11 +24,13 @@
 package org.lightjason.rest.container;
 
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
 
 
 /**
  *raw value of a term
  */
+@XmlRootElement( name = "raw" )
 public final class CRaw<T> implements ITerm
 {
     /**

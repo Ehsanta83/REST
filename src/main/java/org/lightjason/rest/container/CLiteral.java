@@ -27,6 +27,7 @@ import org.lightjason.agentspeak.language.ILiteral;
 import org.lightjason.agentspeak.language.variable.IVariable;
 
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -34,12 +35,13 @@ import java.util.stream.Collectors;
 /**
  * literal container
  */
+@XmlRootElement( name = "literal" )
 public final class CLiteral implements ITerm
 {
     /**
      * functor
      */
-    @XmlElement( name = "literal" )
+    @XmlElement( name = "functor" )
     private final String m_functor;
     /**
      * parallel flag

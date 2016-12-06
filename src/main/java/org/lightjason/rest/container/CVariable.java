@@ -24,17 +24,19 @@
 package org.lightjason.rest.container;
 
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
 
 
 /**
  * variable container
  */
+@XmlRootElement( name = "variable" )
 public final class CVariable implements ITerm
 {
     /**
      * functor
      */
-    @XmlElement( name = "variable" )
+    @XmlElement( name = "functor" )
     private final String m_functor;
     /**
      * value

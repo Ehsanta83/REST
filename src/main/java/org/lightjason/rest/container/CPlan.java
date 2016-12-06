@@ -25,11 +25,13 @@ package org.lightjason.rest.container;
 
 
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
 
 
 /**
  * plan container
  */
+@XmlRootElement( name = "plan" )
 public final class CPlan implements IPlan
 {
     /**
@@ -40,7 +42,7 @@ public final class CPlan implements IPlan
     /**
      * plan literal
      */
-    @XmlElement( name = "name" )
+    @XmlElement( name = "literal" )
     private final ITerm m_literal;
     /**
      * successfully runs
