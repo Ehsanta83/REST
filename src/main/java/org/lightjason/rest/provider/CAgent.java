@@ -156,7 +156,6 @@ public final class CAgent implements IProvider
 
         return CExecution.cycle( Stream.of( l_agent ) )
                   .map( Throwable::getMessage )
-                  .filter( i -> !i.isEmpty() )
                   .map( i -> Response.status( Response.Status.CONFLICT ).entity( i ).build() )
                   .findAny()
                   .orElseGet( () -> Response.status( Response.Status.OK ).build() );
@@ -248,33 +247,11 @@ public final class CAgent implements IProvider
         if ( l_agent == null )
             return Response.status( Response.Status.NOT_FOUND ).entity( CCommon.languagestring( this, "agentnotfound", p_id ) ).build();
 
-        // parse literal
-        final ILiteral l_literal;
-        try
-        {
-            l_literal = CLiteral.parse( p_literal );
-        }
-        catch ( final Exception l_exception )
-        {
-            return Response.status( Response.Status.BAD_REQUEST ).entity( CCommon.languagestring( this, "literalparse" ) ).build();
-        }
-
-        // execute belief action
-        switch ( p_action.toLowerCase( Locale.ROOT ) )
-        {
-            case "delete" :
-                l_agent.beliefbase().remove( l_literal );
-                break;
-
-            case "add" :
-                l_agent.beliefbase().add( l_literal );
-                break;
-
-            default:
-                return Response.status( Response.Status.BAD_REQUEST ).entity( CCommon.languagestring( this, "actionnotfound", p_action ) ).build();
-        }
-
-        return Response.status( Response.Status.OK ).build();
+        return CExecution.belief( Stream.of( l_agent ), p_action, p_literal )
+                         .map( Throwable::getMessage )
+                         .map( i -> Response.status( Response.Status.CONFLICT ).entity( i ).build() )
+                         .findAny()
+                         .orElseGet( () -> Response.status( Response.Status.OK ).build() );
     }
 
     /**

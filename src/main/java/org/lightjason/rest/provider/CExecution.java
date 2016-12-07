@@ -28,11 +28,15 @@ import org.lightjason.agentspeak.language.CLiteral;
 import org.lightjason.agentspeak.language.CRawTerm;
 import org.lightjason.agentspeak.language.ILiteral;
 import org.lightjason.agentspeak.language.ITerm;
+import org.lightjason.agentspeak.language.instantiable.plan.trigger.CTrigger;
+import org.lightjason.agentspeak.language.instantiable.plan.trigger.ITrigger;
+import org.lightjason.rest.CCommon;
 
 import java.util.Arrays;
-import java.util.Collections;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -109,18 +113,96 @@ public final class CExecution
      */
     public static Stream<Exception> belief( final Stream<IAgent<?>> p_agents, final String p_action, final String p_data )
     {
+        final Set<ILiteral> l_literal = parsestringterm( p_data ).filter( i -> i instanceof ILiteral )
+                                                                 .map( ITerm::<ILiteral>raw )
+                                                                 .collect( Collectors.toSet() );
+        return p_agents
+            .parallel()
+            .map( i -> action(
+                p_action, i, l_literal.stream(),
+                ( n, m ) -> n.beliefbase().add( m ),
+                ( n, m ) -> n.beliefbase().remove( m )
+            ) )
+            .filter( Objects::nonNull );
+    }
+
+    /**
+     * trigger a goal
+     * @param p_agents agent stream
+     * @param p_action action
+     * @param p_trigger trigger type
+     * @param p_data trigger data
+     * @param p_immediately immediately execution
+     * @return error stream
+     */
+    public static Stream<Exception> goaltrigger( final Stream<IAgent<?>> p_agents, final String p_action, final String p_trigger, final String p_data, final boolean p_immediately )
+    {
+        final Set<ILiteral> l_literal = parsestringterm( p_data ).filter( i -> i instanceof ILiteral )
+                                                                 .map( ITerm::<ILiteral>raw )
+                                                                 .collect( Collectors.toSet() );
+        final String l_trigger = p_trigger.trim().toLowerCase( Locale.ROOT );
+
+        switch ( l_trigger )
+        {
+            case "belief" :
+                p_agents
+                    .parallel()
+                    .map( i -> action(
+                        p_action, i, l_literal.stream(),
+                        ( n, m ) -> m.forEach( u -> n.trigger( CTrigger.from( ITrigger.EType.ADDBELIEF, u ) ) ),
+                        ( n, m ) -> n.beliefbase().remove( m )
+                    ) )
+                    .filter( Objects::nonNull );
+
+
+            default:
+                return Stream.of( new RuntimeException( CCommon.languagestring( CExecution.class, "triggerunknown", l_trigger ) ) );
+        }
+    }
+
+    /**
+     *
+     * @param p_action action name
+     * @param p_value term value
+     * @param p_add add function
+     * @param p_delete delete function
+     * @tparam T term type
+     * @return exception on error null on successfull
+     */
+    private static <T> Exception action( final String p_action, final IAgent<?> p_agent, final Stream<T> p_value,
+                                                       final BiConsumer<IAgent<?>, Stream<T>> p_add, final BiConsumer<IAgent<?>, Stream<T>> p_delete
+    )
+    {
         try
         {
-            EAction.valueOf( p_action.trim().toUpperCase() );
-        } catch ( final Exception l_exception )
-        {
-            return Stream.of( l_exception );
+            final String l_action = p_action.trim().toLowerCase( Locale.ROOT );
+            switch ( l_action )
+            {
+                case "add":
+                    p_add.accept( p_agent, p_value );
+                    return null;
+
+                case "delete":
+                    p_delete.accept( p_agent, p_value );
+                    return null;
+
+                default:
+                    return new RuntimeException( CCommon.languagestring( CExecution.class, "actionunknown", l_action ) );
+            }
         }
-
-        final Set<ILiteral> l_literals = parsestringterm( p_data ).filter( i -> i instanceof ILiteral ).map( ITerm::<ILiteral>raw ).collect( Collectors.toSet() );
-        p_agents.parallel().forEach( i -> i.beliefbase().add(  )
-
+        catch ( final Exception l_exception )
+        {
+            return l_exception;
+        }
     }
+
+    private static Stream<Exception> switcher( final String p_value, final String p_first, final String p_second, final, final , final String p_error )
+    {
+
+
+        return
+    }
+
 
     /**
      * parses a string to a term set
@@ -171,13 +253,4 @@ public final class CExecution
                      .orElseGet( () -> p_return.apply( p_data ) );
     }
 
-
-    /**
-     * action
-     */
-    public enum EAction
-    {
-        ADD,
-        DELETE;
-    }
 }
