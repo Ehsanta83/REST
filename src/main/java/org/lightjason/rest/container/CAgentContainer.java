@@ -54,9 +54,14 @@ public final class CAgentContainer<T> implements IAgentContainer
      */
     private final List<ITerm> m_runningplan = new ArrayList<>();
     /**
-     * belief as strings
+     * beliefs
      */
     private final List<ITerm> m_belief = new ArrayList<>();
+    /**
+     * rules
+     */
+    private final List<ITerm> m_rules = new ArrayList<>();
+
     /**
      * cycle
      */
@@ -80,12 +85,8 @@ public final class CAgentContainer<T> implements IAgentContainer
         return m_cycle;
     }
 
-    /**
-     * set cycle
-     * @param p_cycle cycle
-     * @return self reference
-     */
-    public final CAgentContainer<T> setCycle( final long p_cycle )
+    @Override
+    public final IAgentContainer setCycle( final long p_cycle )
     {
         m_cycle = p_cycle;
         return this;
@@ -101,12 +102,8 @@ public final class CAgentContainer<T> implements IAgentContainer
         return m_sleeping;
     }
 
-    /**
-     * set sleeping
-     * @param p_sleeping sleeping value
-     * @return self reference
-     */
-    public final CAgentContainer<T> setSleeping( final long p_sleeping )
+    @Override
+    public final IAgentContainer setSleeping( final long p_sleeping )
     {
         m_sleeping = p_sleeping < 0 ? 0 : p_sleeping;
         return this;
@@ -178,7 +175,7 @@ public final class CAgentContainer<T> implements IAgentContainer
      */
     public final CAgentContainer<T> setRunningplan( final ILiteral p_plan )
     {
-        //m_runningplan.add( new CLiteral( p_plan ) );
+        m_runningplan.add( new CLiteral( p_plan ) );
         return this;
     }
 

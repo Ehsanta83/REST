@@ -29,9 +29,7 @@ import com.google.common.collect.HashBiMap;
 import com.google.common.collect.Maps;
 import org.lightjason.agentspeak.agent.IAgent;
 import org.lightjason.agentspeak.language.CLiteral;
-import org.lightjason.agentspeak.language.CRawTerm;
 import org.lightjason.agentspeak.language.ILiteral;
-import org.lightjason.agentspeak.language.ITerm;
 import org.lightjason.agentspeak.language.instantiable.plan.trigger.CTrigger;
 import org.lightjason.agentspeak.language.instantiable.plan.trigger.ITrigger;
 import org.lightjason.rest.CCommon;
@@ -47,9 +45,7 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.text.MessageFormat;
-import java.util.Arrays;
 import java.util.Locale;
-import java.util.Objects;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
@@ -138,24 +134,7 @@ public final class CAgent implements IProvider
     @Path( "/cycle" )
     public final Response cycle()
     {
-        final Set<String> l_result = m_agents
-            .values()
-            .parallelStream()
-            .map( i -> {
-                try
-                {
-                    i.call();
-                    return null;
-                }
-                catch ( final Exception l_exception )
-                {
-                    return l_exception.getMessage();
-                }
-            } )
-            .filter( Objects::nonNull )
-            .filter( String::isEmpty )
-            .collect( Collectors.toSet() );
-
+        final Set<String> l_result = CExecution.cycle( m_agents.values().stream() ).map( Throwable::getMessage ).collect( Collectors.toSet() );
         return l_result.isEmpty()
               ? Response.status( Response.Status.OK ).build()
               : Response.status( Response.Status.CONFLICT ).entity( MessageFormat.format( "{0}", l_result ) ).build();
@@ -172,19 +151,15 @@ public final class CAgent implements IProvider
     public final Response cycle( @PathParam( "id" ) final String p_id )
     {
         final IAgent<?> l_agent = m_agents.get( m_formater.apply( p_id ) );
-
         if ( l_agent == null )
             return Response.status( Response.Status.NOT_FOUND ).entity( CCommon.languagestring( this, "agentnotfound", p_id ) ).build();
 
-        try
-        {
-            l_agent.call();
-        }
-        catch ( final Exception l_exception )
-        {
-            return Response.status( Response.Status.CONFLICT ).entity( l_exception.getMessage() ).build();
-        }
-        return Response.status( Response.Status.OK ).build();
+        return CExecution.cycle( Stream.of( l_agent ) )
+                  .map( Throwable::getMessage )
+                  .filter( i -> !i.isEmpty() )
+                  .map( i -> Response.status( Response.Status.CONFLICT ).entity( i ).build() )
+                  .findAny()
+                  .orElseGet( () -> Response.status( Response.Status.OK ).build() );
     }
 
     /**
@@ -215,26 +190,10 @@ public final class CAgent implements IProvider
     public final Response sleep( @PathParam( "id" ) final String p_id, @QueryParam( "time" ) final long p_time, final String p_data )
     {
         final IAgent<?> l_agent = m_agents.get( m_formater.apply( p_id ) );
-
         if ( l_agent == null )
             return Response.status( Response.Status.NOT_FOUND ).entity( CCommon.languagestring( this, "agentnotfound", p_id ) ).build();
 
-        l_agent.sleep(
-
-            p_time <= 0 ? Long.MAX_VALUE : p_time,
-
-            p_data.isEmpty()
-            ? Stream.of()
-            : Arrays.stream( p_data.split( ";|\\n" ) )
-                    .map( String::trim )
-                    .map( i -> parseterm(
-                        i,
-                        CLiteral::parse,
-                        ( j ) -> CRawTerm.from( Long.parseLong( j ) ),
-                        ( j ) -> CRawTerm.from( Double.parseDouble( j ) )
-                    ) )
-
-        );
+        CExecution.sleep( Stream.of( l_agent ), p_time, p_data );
         return Response.status( Response.Status.OK ).build();
     }
 
@@ -264,25 +223,10 @@ public final class CAgent implements IProvider
     public final Response wakeup( @PathParam( "id" ) final String p_id, final String p_data )
     {
         final IAgent<?> l_agent = m_agents.get( m_formater.apply( p_id ) );
-
         if ( l_agent == null )
             return Response.status( Response.Status.NOT_FOUND ).entity( CCommon.languagestring( this, "agentnotfound", p_id ) ).build();
 
-        l_agent.wakeup(
-
-            p_data.isEmpty()
-            ? Stream.of()
-            : Arrays.stream( p_data.split( ";|\\n" ) )
-                    .map( String::trim )
-                    .map( i -> parseterm(
-                        i,
-                        CLiteral::parse,
-                        ( j ) -> CRawTerm.from( Long.parseLong( j ) ),
-                        ( j ) -> CRawTerm.from( Double.parseDouble( j ) )
-
-                    ) )
-
-        );
+        CExecution.wakeup( Stream.of( l_agent ), p_data );
         return Response.status( Response.Status.OK ).build();
     }
 
@@ -297,7 +241,7 @@ public final class CAgent implements IProvider
     @POST
     @Path( "/{id}/belief/{action}" )
     @Consumes( MediaType.TEXT_PLAIN )
-    public final Response addbelief( @PathParam( "id" ) final String p_id, @PathParam( "action" ) final String p_action, final String p_literal )
+    public final Response belief( @PathParam( "id" ) final String p_id, @PathParam( "action" ) final String p_action, final String p_literal )
     {
         // find agent
         final IAgent<?> l_agent = m_agents.get( m_formater.apply( p_id ) );
@@ -342,9 +286,9 @@ public final class CAgent implements IProvider
      * @return http response
      */
     @POST
-    @Path( "/{id}/trigger/{trigger}/immediately" )
+    @Path( "/{id}/trigger/{action}/{trigger}/immediately" )
     @Consumes( MediaType.TEXT_PLAIN )
-    public final Response triggerimmediately( @PathParam( "id" ) final String p_id, @PathParam( "trigger" ) final String p_trigger, final String p_literal )
+    public final Response goalimmediately( @PathParam( "id" ) final String p_id, @PathParam( "trigger" ) final String p_trigger, final String p_literal )
     {
         return this.executetrigger( p_id, p_trigger, p_literal, ( i, j ) -> i.trigger( j, true ) );
     }
@@ -358,41 +302,14 @@ public final class CAgent implements IProvider
      * @return http response
      */
     @POST
-    @Path( "/{id}/trigger/{trigger}" )
+    @Path( "/{id}/trigger/{action}/{trigger}" )
     @Consumes( MediaType.TEXT_PLAIN )
-    public final Response trigger( @PathParam( "id" ) final String p_id, @PathParam( "trigger" ) final String p_trigger, final String p_literal )
+    public final Response goal( @PathParam( "id" ) final String p_id, @PathParam( "trigger" ) final String p_trigger, final String p_literal )
     {
         return this.executetrigger( p_id, p_trigger, p_literal, ( i, j ) -> i.trigger( j ) );
     }
 
     // ---------------------------------------------------------------------------------------------------------------------------------------------------------
-
-    /**
-     * parse any string data into a term
-     *
-     * @param p_data string data
-     * @param p_parse parsing function
-     * @return term
-     */
-    @SafeVarargs
-    private static ITerm parseterm( final String p_data, final IFunction<String, ITerm>... p_parse )
-    {
-        return Arrays.stream( p_parse )
-                     .map( i -> {
-                         try
-                         {
-                             return i.apply( p_data );
-                         }
-                         catch ( final Exception l_exception )
-                         {
-                             return null;
-                         }
-                     } )
-                     .filter( Objects::nonNull )
-                     .findFirst()
-                     .orElseGet( CRawTerm.from( p_data ).raw() );
-    }
-
 
     /**
      * triggers the agent based on input data

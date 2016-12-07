@@ -28,4 +28,20 @@ package org.lightjason.rest.container;
  */
 public interface IAgentContainer
 {
+
+    /**
+     * set cycle
+     * @param p_cycle cycle
+     * @return self reference
+     */
+    IAgentContainer setCycle( final long p_cycle );
+
+    /**
+     * set sleeping
+     * @param p_sleeping sleeping value
+     * @return self reference
+     */
+    IAgentContainer setSleeping( final long p_sleeping );
+
+
 }
