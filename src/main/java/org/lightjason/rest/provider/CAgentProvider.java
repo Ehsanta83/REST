@@ -58,7 +58,7 @@ import java.util.stream.Stream;
  * an agent as XML and JSON request
  */
 @Path( "/agent" )
-public final class CAgent implements IProvider
+public final class CAgentProvider implements IProvider
 {
     /**
      * function to format agent identifier

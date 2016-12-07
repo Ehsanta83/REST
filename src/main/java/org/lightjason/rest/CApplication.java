@@ -25,7 +25,8 @@ package org.lightjason.rest;
 
 import org.glassfish.jersey.server.ResourceConfig;
 import org.lightjason.agentspeak.agent.IAgent;
-import org.lightjason.rest.provider.CAgent;
+import org.lightjason.rest.provider.CAgentProvider;
+import org.lightjason.rest.provider.CGroupProvider;
 import org.lightjason.rest.provider.IProvider;
 
 import java.text.MessageFormat;
@@ -39,7 +40,11 @@ public final class CApplication extends ResourceConfig
     /**
      * agent provider
      */
-    private final IProvider m_agentsbyname = new CAgent();
+    private final IProvider m_agentsbyname = new CAgentProvider();
+    /**
+     * agent group provider
+     */
+    private final IProvider m_agentsbygroup = new CGroupProvider();
 
     /**
      * ctor
@@ -47,13 +52,13 @@ public final class CApplication extends ResourceConfig
     public CApplication()
     {
         this.register( m_agentsbyname );
+        this.register( m_agentsbygroup );
         this.packages(
             true,
             MessageFormat.format( "{0}.{1}", CCommon.PACKAGEROOT, "container" ),
             "com.fasterxml.jackson.jaxrs.json"
         );
     }
-
 
     /**
      * register an agent with a name

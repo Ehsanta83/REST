@@ -139,6 +139,12 @@
         </dependency>
 
 
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>20.0</version>
+        </dependency>
+
 
         <!-- test -->
         <dependency>
@@ -431,9 +437,6 @@
                     <filesets>
                         <fileset>
                             <directory>.</directory>
-                            <includes>
-                                <include>src/main/antlr4/**/*.tokens</include>
-                            </includes>
                         </fileset>
                     </filesets>
                 </configuration>
