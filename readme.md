@@ -19,7 +19,7 @@
 
 ## Usage
 
-The component defines a set of URL pattern to control an agent:
+### URL pattern to control a single agent
 
 * ```/agent/list``` (HTTP-GET) returns a list of all registered agent names
 * ```/agent/cycle``` (HTTP-GET) executes the cycle of all registered agents
@@ -31,3 +31,4 @@ The component defines a set of URL pattern to control an agent:
 * ```/agent/<agent identifier>/trigger/<action>/<type>/immediately``` (HTTP-POST) triggers a goal immediately (equal to trigger-call)
 * ```/agent/<agent identifier>/belief/<action>``` (HTTP-POST) modifies the beliefbase with action ```add``` or ```delete``` and a literal which is passed by the post plain-text data
 
+### URL pattern to control a group of agents
