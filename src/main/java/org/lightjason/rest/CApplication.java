@@ -30,6 +30,7 @@ import org.lightjason.rest.provider.CGroupProvider;
 import org.lightjason.rest.provider.IProvider;
 
 import java.text.MessageFormat;
+import java.util.Arrays;
 
 
 /**
@@ -61,27 +62,30 @@ public final class CApplication extends ResourceConfig
     }
 
     /**
-     * register an agent with a name
+     * register an agent with a name and optional groups
      *
      * @param p_id agent name / id (case-insensitive)
      * @param p_agent agent object
+     * @param p_group group names
      * @return self reference
      */
-    public final CApplication register( final String p_id, final IAgent<?> p_agent )
+    public final CApplication register( final String p_id, final IAgent<?> p_agent, final String... p_group )
     {
         m_agentsbyname.register( p_id, p_agent );
+        if ( ( p_group != null ) && ( p_group.length > 0 ) )
+            Arrays.stream( p_group ).forEach( i -> m_agentsbygroup.register( i, p_agent ) );
         return this;
     }
 
     /**
      * unregister agent by the name
      *
-     * @param p_id agent name / id (case insensitive )
+     * @param p_id agent name / id (case-insensitive)
      * @return self refrence
      */
     public final CApplication unregister( final String p_id )
     {
-        m_agentsbyname.unregister( p_id );
+        m_agentsbygroup.unregister( m_agentsbyname.unregister( p_id ) );
         return this;
     }
 
@@ -93,7 +97,19 @@ public final class CApplication extends ResourceConfig
      */
     public final CApplication unregister( final IAgent<?> p_agent )
     {
-        m_agentsbyname.unregister( p_agent );
+        m_agentsbygroup.unregister( m_agentsbyname.unregister( p_agent ) );
+        return this;
+    }
+
+    /**
+     * unregister all agents from a group
+     *
+     * @param p_group group name (case-insensitive)
+     * @return self refrence
+     */
+    public final CApplication unregistergroup( final String p_group )
+    {
+        m_agentsbyname.unregister( m_agentsbygroup.unregister( p_group ) );
         return this;
     }
 

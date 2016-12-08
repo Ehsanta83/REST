@@ -27,14 +27,21 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 import org.lightjason.agentspeak.agent.IAgent;
+import org.lightjason.rest.CCommon;
+import org.lightjason.rest.inspector.CAgentInspector;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Locale;
 import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 
 /**
@@ -62,18 +69,26 @@ public final class CGroupProvider implements IProvider
     }
 
     @Override
-    public final IProvider unregister( final String p_id )
+    public final Stream<IAgent<?>> unregister( final String p_id )
     {
-        m_groups.asMap().remove( m_formater.apply( p_id ) );
-        return this;
+        return m_groups.asMap().remove( m_formater.apply( p_id ) ).stream();
     }
 
     @Override
-    public final IProvider unregister( final IAgent<?> p_agent )
+    public final Stream<? extends IAgent<?>> unregister( final IAgent<?>... p_agent )
     {
-        m_groups.asMap().values().parallelStream().forEach( i -> i.remove( p_agent ) );
-        return this;
+        return this.unregister( Arrays.stream( p_agent ) );
     }
+
+    @Override
+    public final Stream<? extends IAgent<?>> unregister( final Stream<? extends IAgent<?>> p_agent )
+    {
+        return p_agent.map( i -> {
+            m_groups.asMap().values().parallelStream().forEach( j -> j.remove( i ) );
+            return i;
+        } ).filter( i -> !m_groups.containsValue( i ) );
+    }
+
 
     // --- api calls -------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -87,7 +102,7 @@ public final class CGroupProvider implements IProvider
     @Produces( MediaType.APPLICATION_JSON )
     public final Object list()
     {
-        return null;
+        return m_groups.keySet();
     }
 
     /**
@@ -100,7 +115,10 @@ public final class CGroupProvider implements IProvider
     @Produces( MediaType.APPLICATION_JSON )
     public final Object list( @PathParam( "group" ) final String p_group )
     {
-        return null;
+        final Collection<IAgent<?>> l_data = m_groups.get( m_formater.apply( p_group ) );
+        return ( l_data == null ) || ( l_data.isEmpty() )
+               ? Response.status( Response.Status.NOT_FOUND ).entity( CCommon.languagestring( this, "agentgroupnotfound", p_group ) ).build()
+               : l_data.parallelStream().flatMap( i -> i.inspect( new CAgentInspector( "foo" ) ) ).map( CAgentInspector::get ).collect( Collectors.toList() );
     }
 
 }

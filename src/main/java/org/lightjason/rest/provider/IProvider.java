@@ -25,6 +25,8 @@ package org.lightjason.rest.provider;
 
 import org.lightjason.agentspeak.agent.IAgent;
 
+import java.util.stream.Stream;
+
 
 /**
  * provider interface
@@ -45,16 +47,24 @@ public interface IProvider
      * unregister agent by the name
      *
      * @param p_id agent name / id (case insensitive )
-     * @return self reference
+     * @return stream of removed agents
      */
-    IProvider unregister( final String p_id );
+    Stream<IAgent<?>> unregister( final String p_id );
 
     /**
      * unregister agent by the objct
      *
      * @param p_agent agent object
-     * @return self reference
+     * @return stream of removed agents
      */
-    IProvider unregister( final IAgent<?> p_agent );
+    Stream<? extends IAgent<?>> unregister( final IAgent<?>... p_agent );
+
+    /**
+     * unregister agent by the objct
+     *
+     * @param p_agent agent stream
+     * @return stream of removed agents
+     */
+    Stream<? extends IAgent<?>> unregister( final Stream<? extends IAgent<?>> p_agent );
 
 }

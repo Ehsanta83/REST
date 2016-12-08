@@ -45,6 +45,7 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.text.MessageFormat;
+import java.util.Arrays;
 import java.util.Locale;
 import java.util.Set;
 import java.util.function.BiConsumer;
@@ -81,18 +82,27 @@ public final class CAgentProvider implements IProvider
     }
 
     @Override
-    public final IProvider unregister( final String p_id )
+    public final Stream<IAgent<?>> unregister( final String p_id )
     {
-        m_agents.remove( m_formater.apply( p_id ) );
-        return this;
+        return Stream.of( m_agents.remove( m_formater.apply( p_id ) ) );
     }
 
     @Override
-    public final IProvider unregister( final IAgent<?> p_agent )
+    public final Stream<IAgent<?>> unregister( final IAgent<?>... p_agent )
     {
-        m_agents.inverse().remove( p_agent );
-        return this;
+        return this.unregister( Arrays.stream( p_agent ) );
     }
+
+    @Override
+    public final Stream<IAgent<?>> unregister( final Stream<? extends IAgent<?>> p_agent )
+    {
+        return p_agent
+            .map( i -> {
+                m_agents.inverse().remove( i );
+                return i;
+            } );
+    }
+
 
     // --- api calls -------------------------------------------------------------------------------------------------------------------------------------------
 

@@ -28,8 +28,6 @@ import org.lightjason.agentspeak.language.CLiteral;
 import org.lightjason.agentspeak.language.CRawTerm;
 import org.lightjason.agentspeak.language.ILiteral;
 import org.lightjason.agentspeak.language.ITerm;
-import org.lightjason.agentspeak.language.instantiable.plan.trigger.CTrigger;
-import org.lightjason.agentspeak.language.instantiable.plan.trigger.ITrigger;
 import org.lightjason.rest.CCommon;
 
 import java.util.Arrays;
@@ -135,13 +133,14 @@ public final class CExecution
      * @param p_immediately immediately execution
      * @return error stream
      */
-    public static Stream<Exception> goaltrigger( final Stream<IAgent<?>> p_agents, final String p_action, final String p_trigger, final String p_data, final boolean p_immediately )
+    public static Stream<Exception> goaltrigger( final Stream<IAgent<?>> p_agents, final String p_action,
+                                                 final String p_trigger, final String p_data, final boolean p_immediately )
     {
         final Set<ILiteral> l_literal = parsestringterm( p_data ).filter( i -> i instanceof ILiteral )
                                                                  .map( ITerm::<ILiteral>raw )
                                                                  .collect( Collectors.toSet() );
         final String l_trigger = p_trigger.trim().toLowerCase( Locale.ROOT );
-
+        /*
         switch ( l_trigger )
         {
             case "belief" :
@@ -156,8 +155,9 @@ public final class CExecution
 
 
             default:
-                return Stream.of( new RuntimeException( CCommon.languagestring( CExecution.class, "triggerunknown", l_trigger ) ) );
         }
+        */
+        return Stream.of();
     }
 
     /**
@@ -195,14 +195,6 @@ public final class CExecution
             return l_exception;
         }
     }
-
-    private static Stream<Exception> switcher( final String p_value, final String p_first, final String p_second, final, final , final String p_error )
-    {
-
-
-        return
-    }
-
 
     /**
      * parses a string to a term set
