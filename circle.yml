@@ -10,7 +10,7 @@ general:
             - /dev-.*/
             - /gh-.*/
             - /binary-.*/
-$ZFSF7K6w79^7ZPZ
+
 machine:
     timezone:
         Europe/Berlin
