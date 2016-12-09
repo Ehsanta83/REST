@@ -32,3 +32,6 @@
 * ```/agent/<agent identifier>/belief/<action>``` (HTTP-POST) modifies the beliefbase with action ```add``` or ```delete``` and a literal which is passed by the post plain-text data
 
 ### URL pattern to control a group of agents
+
+* ```/agentgroup/list``` (HTTP-GET)  list all groups with the names
+* ```/agentgroup/listgroup/<group name>``` (HTTP-GET) list all agents within the group
