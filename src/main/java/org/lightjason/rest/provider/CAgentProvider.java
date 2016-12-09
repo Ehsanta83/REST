@@ -103,6 +103,12 @@ public final class CAgentProvider implements IProvider
             } );
     }
 
+    @Override
+    public final Stream<IProvider> dependprovider()
+    {
+        return Stream.of( new CGroupProvider( m_agents ) );
+    }
+
 
     // --- api calls -------------------------------------------------------------------------------------------------------------------------------------------
 

@@ -23,6 +23,8 @@
 
 package org.lightjason.rest.provider;
 
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
@@ -58,6 +60,20 @@ public final class CGroupProvider implements IProvider
      * group map
      */
     private final Multimap<String, IAgent<?>> m_groups = Multimaps.synchronizedMultimap( HashMultimap.create() );
+    /**
+     * bimap with name and agent object
+     */
+    private final BiMap<String, IAgent<?>> m_agentsbyname;
+
+    /**
+     * ctor
+     *
+     * @param p_namereference bimap with name and agent object
+     */
+    public CGroupProvider( final BiMap<String, IAgent<?>> p_namereference )
+    {
+        m_agentsbyname = p_namereference;
+    }
 
     // --- agent register calls --------------------------------------------------------------------------------------------------------------------------------
 
@@ -89,6 +105,12 @@ public final class CGroupProvider implements IProvider
         } ).filter( i -> !m_groups.containsValue( i ) );
     }
 
+    @Override
+    public final Stream<IProvider> dependprovider()
+    {
+        return Stream.of();
+    }
+
 
     // --- api calls -------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -118,7 +140,10 @@ public final class CGroupProvider implements IProvider
         final Collection<IAgent<?>> l_data = m_groups.get( m_formater.apply( p_group ) );
         return ( l_data == null ) || ( l_data.isEmpty() )
                ? Response.status( Response.Status.NOT_FOUND ).entity( CCommon.languagestring( this, "agentgroupnotfound", p_group ) ).build()
-               : l_data.parallelStream().flatMap( i -> i.inspect( new CAgentInspector( "foo" ) ) ).map( CAgentInspector::get ).collect( Collectors.toList() );
+               : l_data.parallelStream()
+                       .flatMap( i -> i.inspect( new CAgentInspector( m_agentsbyname.inverse().get( i ) ) ) )
+                       .map( CAgentInspector::get )
+                       .collect( Collectors.toList() );
     }
 
 }

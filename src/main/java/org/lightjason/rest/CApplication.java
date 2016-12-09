@@ -26,7 +26,6 @@ package org.lightjason.rest;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.lightjason.agentspeak.agent.IAgent;
 import org.lightjason.rest.provider.CAgentProvider;
-import org.lightjason.rest.provider.CGroupProvider;
 import org.lightjason.rest.provider.IProvider;
 
 import java.text.MessageFormat;
@@ -45,7 +44,11 @@ public final class CApplication extends ResourceConfig
     /**
      * agent group provider
      */
-    private final IProvider m_agentsbygroup = new CGroupProvider();
+    private final IProvider m_agentsbygroup = m_agentsbyname.dependprovider()
+                                                            .findFirst()
+                                                            .orElseThrow( () -> new RuntimeException(
+                                                                CCommon.languagestring( this, "nogroupprovider" )
+                                                            ) );
 
     /**
      * ctor

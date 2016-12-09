@@ -67,4 +67,11 @@ public interface IProvider
      */
     Stream<? extends IAgent<?>> unregister( final Stream<? extends IAgent<?>> p_agent );
 
+    /**
+     * returns a depend provider
+     *
+     * @return provider stream
+     */
+    Stream<IProvider> dependprovider();
+
 }
