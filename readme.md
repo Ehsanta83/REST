@@ -34,6 +34,8 @@
 ### URL pattern to control a group of agents
 
 * ```/agentgroup/list``` (HTTP-GET)  list all groups with the names
-* ```/agentgroup/listgroup/<group name>``` (HTTP-GET) list all agents within the group
-* ```/agentgroup/cycle/{group}``` (HTTP-GET) executes the agent cycle of a group
-* ```/agentgroup/wakeup/{group}``` (HTTP-GET & POST) runs the wake-up call of all agents within a group (the post content data can contains literals seperated by semicolon or line-break)
+* ```/agentgroup/<group name>/list``` (HTTP-GET) list all agents within the group
+* ```/agentgroup/<group>/cycle``` (HTTP-GET) executes the agent cycle of a group
+* ```/agentgroup/<group>/sleep?time=``` (HTTP-GET) pushs the agent into sleeping state for a defined time (time parameter is optional, if is not set the time is unlimited)
+* ```/agentgroup/<group>/wakeup``` (HTTP-GET & POST) runs the wake-up call of all agents within a group (the post content data can contains literals seperated by semicolon or line-break)
+* ```/agentgroup/<group>/belief/<action>``` (HTTP-POST) modifies the beliefbase with action ```add``` or ```delete``` and a literal which is passed by the post plain-text data

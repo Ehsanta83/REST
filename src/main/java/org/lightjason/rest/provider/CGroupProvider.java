@@ -37,6 +37,7 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.text.MessageFormat;
@@ -138,7 +139,7 @@ public final class CGroupProvider implements IProvider
      * @return http response
      */
     @GET
-    @Path( "/listgroup/{group}" )
+    @Path( "/{group}/list" )
     @Produces( MediaType.APPLICATION_JSON )
     public final Object list( @PathParam( "group" ) final String p_group )
     {
@@ -158,7 +159,7 @@ public final class CGroupProvider implements IProvider
      * @return response
      */
     @GET
-    @Path( "/cycle/{group}" )
+    @Path( "/{group}/cycle" )
     public final Response cycle( @PathParam( "group" ) final String p_group )
     {
         final Set<String> l_result = CExecution.cycle( this.group( p_group ).stream() ).map( Throwable::getMessage ).collect( Collectors.toSet() );
@@ -174,7 +175,7 @@ public final class CGroupProvider implements IProvider
      * @return http response
      */
     @GET
-    @Path( "/wakeup/{group}" )
+    @Path( "/{group}/wakeup" )
     public final Response wakeup( @PathParam( "group" ) final String p_group )
     {
         return this.wakeup( p_group, "" );
@@ -188,7 +189,7 @@ public final class CGroupProvider implements IProvider
      * @return http response
      */
     @POST
-    @Path( "/wakeup/{group}" )
+    @Path( "/{group}/wakeup" )
     @Consumes( MediaType.TEXT_PLAIN )
     public final Response wakeup( @PathParam( "group" ) final String p_group, final String p_data )
     {
@@ -198,6 +199,66 @@ public final class CGroupProvider implements IProvider
 
         CExecution.wakeup( l_data.stream(), p_data );
         return Response.status( Response.Status.OK ).build();
+    }
+
+    /**
+     * api call to set sleeping state (http get)
+     *
+     * @param p_group agent identifier
+     * @param p_time sleeping time
+     * @return http response
+     */
+    @GET
+    @Path( "/{group}/sleep" )
+    public final Response sleep( @PathParam( "group" ) final String p_group, @QueryParam( "time" ) final long p_time )
+    {
+        return this.sleep( p_group, p_time, "" );
+    }
+
+    /**
+     * rest-api call to set sleeping state (http post)
+     *
+     * @param p_group agent identifier
+     * @param p_time sleeping time
+     * @param p_data wake-up data
+     * @return http response
+     */
+    @POST
+    @Path( "/{group}/sleep" )
+    @Consumes( MediaType.TEXT_PLAIN )
+    public final Response sleep( @PathParam( "group" ) final String p_group, @QueryParam( "time" ) final long p_time, final String p_data )
+    {
+        final Collection<IAgent<?>> l_data = this.group( p_group );
+        if ( l_data.isEmpty() )
+            return Response.status( Response.Status.NOT_FOUND ).entity( CCommon.languagestring( this, "agentgroupnotfound", p_group ) ).build();
+
+        CExecution.sleep( l_data.stream(), p_time, p_data );
+        return Response.status( Response.Status.OK ).build();
+    }
+
+
+    /**
+     * rest-api call to add a new belief
+     *
+     * @param p_group agent identifier
+     * @param p_action action
+     * @param p_literal literal
+     * @return http response
+     */
+    @POST
+    @Path( "/{group}/belief/{action}" )
+    @Consumes( MediaType.TEXT_PLAIN )
+    public final Response belief( @PathParam( "group" ) final String p_group, @PathParam( "action" ) final String p_action, final String p_literal )
+    {
+        final Collection<IAgent<?>> l_data = this.group( p_group );
+        if ( l_data.isEmpty() )
+            return Response.status( Response.Status.NOT_FOUND ).entity( CCommon.languagestring( this, "agentgroupnotfound", p_group ) ).build();
+
+        return CExecution.belief( l_data.stream(), p_action, p_literal )
+                         .map( Throwable::getMessage )
+                         .map( i -> Response.status( Response.Status.CONFLICT ).entity( i ).build() )
+                         .findAny()
+                         .orElseGet( () -> Response.status( Response.Status.OK ).build() );
     }
 
     /**
