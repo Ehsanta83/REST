@@ -31,15 +31,20 @@ import org.lightjason.agentspeak.agent.IAgent;
 import org.lightjason.rest.CCommon;
 import org.lightjason.rest.inspector.CAgentInspector;
 
+import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Locale;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -129,6 +134,7 @@ public final class CGroupProvider implements IProvider
     /**
      * returns all agents within a group
      *
+     * @param p_group group name
      * @return http response
      */
     @GET
@@ -136,8 +142,8 @@ public final class CGroupProvider implements IProvider
     @Produces( MediaType.APPLICATION_JSON )
     public final Object list( @PathParam( "group" ) final String p_group )
     {
-        final Collection<IAgent<?>> l_data = m_groups.get( m_formater.apply( p_group ) );
-        return ( l_data == null ) || ( l_data.isEmpty() )
+        final Collection<IAgent<?>> l_data = this.group( p_group );
+        return l_data.isEmpty()
                ? Response.status( Response.Status.NOT_FOUND ).entity( CCommon.languagestring( this, "agentgroupnotfound", p_group ) ).build()
                : l_data.parallelStream()
                        .flatMap( i -> i.inspect( new CAgentInspector( m_agentsbyname.inverse().get( i ) ) ) )
@@ -145,4 +151,66 @@ public final class CGroupProvider implements IProvider
                        .collect( Collectors.toList() );
     }
 
+    /**
+     * executes the cycle for all agents
+     *
+     * @param p_group group name
+     * @return response
+     */
+    @GET
+    @Path( "/cycle/{group}" )
+    public final Response cycle( @PathParam( "group" ) final String p_group )
+    {
+        final Set<String> l_result = CExecution.cycle( this.group( p_group ).stream() ).map( Throwable::getMessage ).collect( Collectors.toSet() );
+        return l_result.isEmpty()
+               ? Response.status( Response.Status.OK ).build()
+               : Response.status( Response.Status.CONFLICT ).entity( MessageFormat.format( "{0}", l_result ) ).build();
+    }
+
+    /**
+     * rest-api call to run wake-up (http get)
+     *
+     * @param p_group group name
+     * @return http response
+     */
+    @GET
+    @Path( "/wakeup/{group}" )
+    public final Response wakeup( @PathParam( "group" ) final String p_group )
+    {
+        return this.wakeup( p_group, "" );
+    }
+
+    /**
+     * rest-api call to run wake-up (http post)
+     *
+     * @param p_group group name
+     * @param p_data data
+     * @return http response
+     */
+    @POST
+    @Path( "/wakeup/{group}" )
+    @Consumes( MediaType.TEXT_PLAIN )
+    public final Response wakeup( @PathParam( "group" ) final String p_group, final String p_data )
+    {
+        final Collection<IAgent<?>> l_data = this.group( p_group );
+        if ( l_data.isEmpty() )
+            return Response.status( Response.Status.NOT_FOUND ).entity( CCommon.languagestring( this, "agentgroupnotfound", p_group ) ).build();
+
+        CExecution.wakeup( l_data.stream(), p_data );
+        return Response.status( Response.Status.OK ).build();
+    }
+
+    /**
+     * returns a group of agents by name
+     *
+     * @param p_group group name
+     * @return agent collection
+     */
+    private Collection<IAgent<?>> group( final String p_group )
+    {
+        final Collection<IAgent<?>> l_data = m_groups.get( m_formater.apply( p_group ) );
+        return l_data == null
+               ? Collections.emptySet()
+               : l_data;
+    }
 }

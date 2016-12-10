@@ -26,7 +26,7 @@
 * ```/agent/<agent identifier>/cycle``` (HTTP-GET) executes the agent cycle
 * ```/agent/<agent identifier>/view``` (HTTP-GET) returns the current state of the agent
 * ```/agent/<agent identifier>/sleep?time=``` (HTTP-GET) pushs the agent into sleeping state for a defined time (time parameter is optional, if is not set the time is unlimited)
-* ```/agent/<agent identifier>/wakeup``` (HTTP-Get & POST) wakes the agent up from sleeping state and via post can be passed a semicolon / line-break list with literals as plain-text which are pushed into the wake-up goal
+* ```/agent/<agent identifier>/wakeup``` (HTTP-GET & POST) wakes the agent up from sleeping state and via post can be passed a semicolon / line-break list with literals as plain-text which are pushed into the wake-up goal
 * ```/agent/<agent identifier>/trigger/<action>/<type>``` (HTTP-POST) triggers a goal within the next cycle, the action can be ```add (+)``` or ```delete (-)``` and the type ```goal``` or ```belief```
 * ```/agent/<agent identifier>/trigger/<action>/<type>/immediately``` (HTTP-POST) triggers a goal immediately (equal to trigger-call)
 * ```/agent/<agent identifier>/belief/<action>``` (HTTP-POST) modifies the beliefbase with action ```add``` or ```delete``` and a literal which is passed by the post plain-text data
@@ -35,3 +35,5 @@
 
 * ```/agentgroup/list``` (HTTP-GET)  list all groups with the names
 * ```/agentgroup/listgroup/<group name>``` (HTTP-GET) list all agents within the group
+* ```/agentgroup/cycle/{group}``` (HTTP-GET) executes the agent cycle of a group
+* ```/agentgroup/wakeup/{group}``` (HTTP-GET & POST) runs the wake-up call of all agents within a group (the post content data can contains literals seperated by semicolon or line-break)
