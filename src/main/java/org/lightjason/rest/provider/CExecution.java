@@ -153,8 +153,9 @@ public final class CExecution
     public static Stream<RuntimeException> goaltrigger( final Stream<IAgent<?>> p_agents, final String p_action,
                                                 final String p_trigger, final String p_data, final boolean p_immediately )
     {
+        final String l_action = ( p_action + p_trigger ).toLowerCase( Locale.ROOT );
         final Set<ITrigger> l_trigger = actionfunction(
-            ( p_action + p_trigger ).toLowerCase( Locale.ROOT ),
+            l_action,
 
             parsestringterm( p_data )
                 .filter( i -> i instanceof ILiteral )
@@ -175,15 +176,15 @@ public final class CExecution
         ).map( i -> (ITrigger) i  ).collect( Collectors.toSet() );
 
         return l_trigger.isEmpty()
-               ? Stream.of( new RuntimeException( CCommon.languagestring( CExecution.class, "actionunknown", p_action ) ) )
+               ? Stream.of( new RuntimeException( CCommon.languagestring( CExecution.class, "actionunknown", l_action ) ) )
                : p_agents.parallel()
                          .flatMap( i -> l_trigger.stream().map( j -> i.trigger( j, p_immediately ) ) )
                          .map( IFuzzyValue::value )
                          .filter( j -> !j )
                          .findAny()
-                         .orElseGet( () -> false )
+                         .orElseGet( () -> true )
                 ? Stream.of()
-                : Stream.of( new RuntimeException( CCommon.languagestring( CExecution.class, "triggererror", p_action ) ) );
+                : Stream.of( new RuntimeException( CCommon.languagestring( CExecution.class, "triggererror", l_action ) ) );
     }
 
     // --- helper functions ------------------------------------------------------------------------------------------------------------------------------------

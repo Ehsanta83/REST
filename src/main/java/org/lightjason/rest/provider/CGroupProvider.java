@@ -315,7 +315,7 @@ public final class CGroupProvider implements IProvider
             p_action,
             p_trigger,
             p_literal,
-            true
+            false
         )
                          .map( Throwable::getMessage )
                          .map( i -> Response.status( Response.Status.CONFLICT ).entity( i ).build() )
