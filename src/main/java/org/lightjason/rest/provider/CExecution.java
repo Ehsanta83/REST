@@ -23,18 +23,21 @@
 
 package org.lightjason.rest.provider;
 
+import com.codepoetics.protonpack.StreamUtils;
 import org.lightjason.agentspeak.agent.IAgent;
 import org.lightjason.agentspeak.language.CLiteral;
 import org.lightjason.agentspeak.language.CRawTerm;
 import org.lightjason.agentspeak.language.ILiteral;
 import org.lightjason.agentspeak.language.ITerm;
+import org.lightjason.agentspeak.language.instantiable.plan.trigger.CTrigger;
+import org.lightjason.agentspeak.language.instantiable.plan.trigger.ITrigger;
 import org.lightjason.rest.CCommon;
 
 import java.util.Arrays;
-import java.util.Locale;
 import java.util.Objects;
 import java.util.Set;
-import java.util.function.BiConsumer;
+import java.util.function.BooleanSupplier;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -50,6 +53,8 @@ public final class CExecution
      */
     private CExecution()
     {}
+
+    // --- agent execution -------------------------------------------------------------------------------------------------------------------------------------
 
     /**
      * runs on an agent stream the cycle
@@ -109,18 +114,28 @@ public final class CExecution
      * @param p_data belief data
      * @return exception stream
      */
-    public static Stream<Exception> belief( final Stream<IAgent<?>> p_agents, final String p_action, final String p_data )
+    public static Stream<RuntimeException> belief( final Stream<IAgent<?>> p_agents, final String p_action, final String p_data )
     {
         final Set<ILiteral> l_literal = parsestringterm( p_data ).filter( i -> i instanceof ILiteral )
                                                                  .map( ITerm::<ILiteral>raw )
                                                                  .collect( Collectors.toSet() );
         return p_agents
             .parallel()
-            .map( i -> action(
-                p_action, i, l_literal.stream(),
-                ( n, m ) -> n.beliefbase().add( m ),
-                ( n, m ) -> n.beliefbase().remove( m )
-            ) )
+            .map( i -> actionconsumer(
+                p_action, l_literal.stream(),
+
+                Stream.of(
+                    "add",
+                    "delete"
+                ),
+
+                Stream.of(
+                    ( n ) -> i.beliefbase().add( n ),
+                    ( n ) -> i.beliefbase().remove( n )
+                )
+            )
+                   ? null
+                   : new RuntimeException( CCommon.languagestring( CExecution.class, "actionunknown", p_action ) ) )
             .filter( Objects::nonNull );
     }
 
@@ -133,67 +148,84 @@ public final class CExecution
      * @param p_immediately immediately execution
      * @return error stream
      */
-    public static Stream<Exception> goaltrigger( final Stream<IAgent<?>> p_agents, final String p_action,
-                                                 final String p_trigger, final String p_data, final boolean p_immediately )
+    @SuppressWarnings( "unchecked" )
+    public static Stream<RuntimeException> goaltrigger( final Stream<IAgent<?>> p_agents, final String p_action,
+                                                        final String p_trigger, final String p_data, final boolean p_immediately )
     {
-        final Set<ILiteral> l_literal = parsestringterm( p_data ).filter( i -> i instanceof ILiteral )
-                                                                 .map( ITerm::<ILiteral>raw )
-                                                                 .collect( Collectors.toSet() );
-        final String l_trigger = p_trigger.trim().toLowerCase( Locale.ROOT );
-        /*
-        switch ( l_trigger )
-        {
-            case "belief" :
-                p_agents
-                    .parallel()
-                    .map( i -> action(
-                        p_action, i, l_literal.stream(),
-                        ( n, m ) -> m.forEach( u -> n.trigger( CTrigger.from( ITrigger.EType.ADDBELIEF, u ) ) ),
-                        ( n, m ) -> n.beliefbase().remove( m )
-                    ) )
-                    .filter( Objects::nonNull );
+        final Set<ITrigger> l_trigger = actionfunction(
+            p_action,
 
+            parsestringterm( p_data )
+                .filter( i -> i instanceof ILiteral )
+                .map( ITerm::<ILiteral>raw ),
 
-            default:
-        }
-        */
-        return Stream.of();
+            Stream.of(
+                "addgoal",
+                "deletegoal",
+                "addbelief",
+                "deletebelief"
+            ),
+            Stream.of(
+                ( n ) -> CTrigger.from( ITrigger.EType.ADDGOAL, n ),
+                ( n ) -> CTrigger.from( ITrigger.EType.DELETEGOAL, n ),
+                ( n ) -> CTrigger.from( ITrigger.EType.ADDBELIEF, n ),
+                ( n ) -> CTrigger.from( ITrigger.EType.DELETEBELIEF, n )
+            )
+        ).map( i -> (ITrigger) i  ).collect( Collectors.toSet() );
+
+        return l_trigger.isEmpty()
+               ? Stream.of( new RuntimeException( CCommon.languagestring( CExecution.class, "actionunknown", p_action ) ) )
+               : p_agents.parallel().map( i -> {
+                   l_trigger.forEach( j -> i.trigger( j, p_immediately ) );
+                   return null;
+               } ).filter( Objects::nonNull );
+    }
+
+    // --- helper functions ------------------------------------------------------------------------------------------------------------------------------------
+
+    /**
+     *
+     * @param p_action action name
+     * @param p_values value stream
+     * @param p_possibility stream with possibility of the action
+     * @param p_executer function for calling on possibility match
+     * @return stream with function results
+     */
+    private static <R, T> Stream<R> actionfunction( final String p_action, final Stream<T> p_values, final Stream<String> p_possibility,
+                                                    final Stream<Function<T, R>> p_executer )
+    {
+        return StreamUtils.zip(
+            p_possibility,
+            p_executer,
+            ( i, j ) ->  p_action.equalsIgnoreCase( i )
+                         ? p_values.parallel().map( j )
+                         : null
+        ).flatMap( i -> i );
     }
 
     /**
      *
      * @param p_action action name
-     * @param p_value term value
-     * @param p_add add function
-     * @param p_delete delete function
-     * @tparam T term type
-     * @return exception on error null on successfull
+     * @param p_values value stream
+     * @param p_possibility stream with possibility of the action
+     * @param p_executer function for calling on possibility match
+     * @return stream with function results
      */
-    private static <T> Exception action( final String p_action, final IAgent<?> p_agent, final Stream<T> p_value,
-                                                       final BiConsumer<IAgent<?>, Stream<T>> p_add, final BiConsumer<IAgent<?>, Stream<T>> p_delete
-    )
+    private static <T> boolean actionconsumer( final String p_action, final Stream<T> p_values, final Stream<String> p_possibility,
+                                                               final Stream<Consumer<Stream<T>>> p_executer )
     {
-        try
-        {
-            final String l_action = p_action.trim().toLowerCase( Locale.ROOT );
-            switch ( l_action )
-            {
-                case "add":
-                    p_add.accept( p_agent, p_value );
-                    return null;
-
-                case "delete":
-                    p_delete.accept( p_agent, p_value );
-                    return null;
-
-                default:
-                    return new RuntimeException( CCommon.languagestring( CExecution.class, "actionunknown", l_action ) );
+        return StreamUtils.zip(
+            p_possibility,
+            p_executer,
+            ( i, j ) -> {
+                if ( p_action.equalsIgnoreCase( i ) )
+                {
+                    j.accept( p_values );
+                    return true;
+                }
+                return false;
             }
-        }
-        catch ( final Exception l_exception )
-        {
-            return l_exception;
-        }
+        ).filter( i -> i ).findFirst().orElseGet( () -> false );
     }
 
     /**
