@@ -135,7 +135,7 @@ public final class CGroupProvider implements IProvider
     /**
      * returns all agents within a group
      *
-     * @param p_group group name
+     * @param p_group agent-group identifier
      * @return http response
      */
     @GET
@@ -155,7 +155,7 @@ public final class CGroupProvider implements IProvider
     /**
      * executes the cycle for all agents
      *
-     * @param p_group group name
+     * @param p_group agent-group identifier
      * @return response
      */
     @GET
@@ -184,7 +184,7 @@ public final class CGroupProvider implements IProvider
     /**
      * rest-api call to run wake-up (http post)
      *
-     * @param p_group group name
+     * @param p_group agent-group identifier
      * @param p_data data
      * @return http response
      */
@@ -204,7 +204,7 @@ public final class CGroupProvider implements IProvider
     /**
      * api call to set sleeping state (http get)
      *
-     * @param p_group agent identifier
+     * @param p_group agent-group identifier
      * @param p_time sleeping time
      * @return http response
      */
@@ -218,7 +218,7 @@ public final class CGroupProvider implements IProvider
     /**
      * rest-api call to set sleeping state (http post)
      *
-     * @param p_group agent identifier
+     * @param p_group agent-group identifier
      * @param p_time sleeping time
      * @param p_data wake-up data
      * @return http response
@@ -240,7 +240,7 @@ public final class CGroupProvider implements IProvider
     /**
      * rest-api call to add a new belief
      *
-     * @param p_group agent identifier
+     * @param p_group agent-group identifier
      * @param p_action action
      * @param p_literal literal
      * @return http response
@@ -250,11 +250,73 @@ public final class CGroupProvider implements IProvider
     @Consumes( MediaType.TEXT_PLAIN )
     public final Response belief( @PathParam( "group" ) final String p_group, @PathParam( "action" ) final String p_action, final String p_literal )
     {
-        final Collection<IAgent<?>> l_data = this.group( p_group );
-        if ( l_data.isEmpty() )
+        final Collection<IAgent<?>> l_agent = this.group( p_group );
+        if ( l_agent.isEmpty() )
             return Response.status( Response.Status.NOT_FOUND ).entity( CCommon.languagestring( this, "agentgroupnotfound", p_group ) ).build();
 
-        return CExecution.belief( l_data.stream(), p_action, p_literal )
+        return CExecution.belief( l_agent.stream(), p_action, p_literal )
+                         .map( Throwable::getMessage )
+                         .map( i -> Response.status( Response.Status.CONFLICT ).entity( i ).build() )
+                         .findAny()
+                         .orElseGet( () -> Response.status( Response.Status.OK ).build() );
+    }
+
+    /**
+     * rest-api call to trigger a plan immediately
+     *
+     * @param p_group agent-group identifier
+     * @param p_trigger trigger type
+     * @param p_literal literal data
+     * @return http response
+     */
+    @POST
+    @Path( "/{group}/trigger/{action}/{trigger}/immediately" )
+    @Consumes( MediaType.TEXT_PLAIN )
+    public final Response goalimmediately( @PathParam( "group" ) final String p_group, @PathParam( "action" ) final String p_action,
+                                           @PathParam( "trigger" ) final String p_trigger, final String p_literal )
+    {
+        final Collection<IAgent<?>> l_agent = this.group( p_group );
+        if ( l_agent.isEmpty() )
+            return Response.status( Response.Status.NOT_FOUND ).entity( CCommon.languagestring( this, "agentgroupnotfound", p_group ) ).build();
+
+        return CExecution.goaltrigger(
+            l_agent.stream(),
+            p_action,
+            p_trigger,
+            p_literal,
+            true
+        )
+                         .map( Throwable::getMessage )
+                         .map( i -> Response.status( Response.Status.CONFLICT ).entity( i ).build() )
+                         .findAny()
+                         .orElseGet( () -> Response.status( Response.Status.OK ).build() );
+    }
+
+    /**
+     * rest-api call to trigger a plan
+     *
+     * @param p_group agent-group identifier
+     * @param p_trigger trigger type
+     * @param p_literal literal data
+     * @return http response
+     */
+    @POST
+    @Path( "/{group}/trigger/{action}/{trigger}" )
+    @Consumes( MediaType.TEXT_PLAIN )
+    public final Response goal( @PathParam( "group" ) final String p_group, @PathParam( "action" ) final String p_action,
+                                @PathParam( "trigger" ) final String p_trigger, final String p_literal )
+    {
+        final Collection<IAgent<?>> l_agent = this.group( p_group );
+        if ( l_agent.isEmpty() )
+            return Response.status( Response.Status.NOT_FOUND ).entity( CCommon.languagestring( this, "agentgroupnotfound", p_group ) ).build();
+
+        return CExecution.goaltrigger(
+            l_agent.stream(),
+            p_action,
+            p_trigger,
+            p_literal,
+            true
+        )
                          .map( Throwable::getMessage )
                          .map( i -> Response.status( Response.Status.CONFLICT ).entity( i ).build() )
                          .findAny()

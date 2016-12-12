@@ -253,7 +253,6 @@ public final class CAgentProvider implements IProvider
     @Consumes( MediaType.TEXT_PLAIN )
     public final Response belief( @PathParam( "id" ) final String p_id, @PathParam( "action" ) final String p_action, final String p_literal )
     {
-        // find agent
         final IAgent<?> l_agent = m_agents.get( m_formater.apply( p_id ) );
         if ( l_agent == null )
             return Response.status( Response.Status.NOT_FOUND ).entity( CCommon.languagestring( this, "agentnotfound", p_id ) ).build();
@@ -279,7 +278,6 @@ public final class CAgentProvider implements IProvider
     public final Response goalimmediately( @PathParam( "id" ) final String p_id, @PathParam( "action" ) final String p_action,
                                            @PathParam( "trigger" ) final String p_trigger, final String p_literal )
     {
-        // find agent
         final IAgent<?> l_agent = m_agents.get( m_formater.apply( p_id ) );
         if ( l_agent == null )
             return Response.status( Response.Status.NOT_FOUND ).entity( CCommon.languagestring( this, "agentnotfound", p_id ) ).build();
@@ -311,7 +309,6 @@ public final class CAgentProvider implements IProvider
     public final Response goal( @PathParam( "id" ) final String p_id, @PathParam( "action" ) final String p_action,
                                 @PathParam( "trigger" ) final String p_trigger, final String p_literal )
     {
-        // find agent
         final IAgent<?> l_agent = m_agents.get( m_formater.apply( p_id ) );
         if ( l_agent == null )
             return Response.status( Response.Status.NOT_FOUND ).entity( CCommon.languagestring( this, "agentnotfound", p_id ) ).build();
