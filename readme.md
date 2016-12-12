@@ -39,3 +39,5 @@
 * ```/agentgroup/<group>/sleep?time=``` (HTTP-GET) pushs the agent into sleeping state for a defined time (time parameter is optional, if is not set the time is unlimited)
 * ```/agentgroup/<group>/wakeup``` (HTTP-GET & POST) runs the wake-up call of all agents within a group (the post content data can contains literals seperated by semicolon or line-break)
 * ```/agentgroup/<group>/belief/<action>``` (HTTP-POST) modifies the beliefbase with action ```add``` or ```delete``` and a literal which is passed by the post plain-text data
+* ```/agentgroup/<group>/trigger/<action>/<type>``` (HTTP-POST) triggers a goal within the next cycle, the action can be ```add (+)``` or ```delete (-)``` and the type ```goal``` or ```belief```
+* ```/agentgroup/<group>/trigger/<action>/<type>/immediately``` (HTTP-POST) triggers a goal immediately (equal to trigger-call)

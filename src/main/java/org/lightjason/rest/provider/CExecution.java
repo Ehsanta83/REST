@@ -35,6 +35,7 @@ import org.lightjason.agentspeak.language.instantiable.plan.trigger.ITrigger;
 import org.lightjason.rest.CCommon;
 
 import java.util.Arrays;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -153,7 +154,7 @@ public final class CExecution
                                                 final String p_trigger, final String p_data, final boolean p_immediately )
     {
         final Set<ITrigger> l_trigger = actionfunction(
-            p_action,
+            ( p_action + p_trigger ).toLowerCase( Locale.ROOT ),
 
             parsestringterm( p_data )
                 .filter( i -> i instanceof ILiteral )

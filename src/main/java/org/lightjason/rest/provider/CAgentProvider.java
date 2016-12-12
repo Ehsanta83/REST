@@ -28,10 +28,6 @@ import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.google.common.collect.Maps;
 import org.lightjason.agentspeak.agent.IAgent;
-import org.lightjason.agentspeak.language.CLiteral;
-import org.lightjason.agentspeak.language.ILiteral;
-import org.lightjason.agentspeak.language.instantiable.plan.trigger.CTrigger;
-import org.lightjason.agentspeak.language.instantiable.plan.trigger.ITrigger;
 import org.lightjason.rest.CCommon;
 import org.lightjason.rest.inspector.CAgentInspector;
 
@@ -48,7 +44,6 @@ import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.Set;
-import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -281,9 +276,25 @@ public final class CAgentProvider implements IProvider
     @POST
     @Path( "/{id}/trigger/{action}/{trigger}/immediately" )
     @Consumes( MediaType.TEXT_PLAIN )
-    public final Response goalimmediately( @PathParam( "id" ) final String p_id, @PathParam( "trigger" ) final String p_trigger, final String p_literal )
+    public final Response goalimmediately( @PathParam( "id" ) final String p_id, @PathParam( "action" ) final String p_action,
+                                           @PathParam( "trigger" ) final String p_trigger, final String p_literal )
     {
-        return this.executetrigger( p_id, p_trigger, p_literal, ( i, j ) -> i.trigger( j, true ) );
+        // find agent
+        final IAgent<?> l_agent = m_agents.get( m_formater.apply( p_id ) );
+        if ( l_agent == null )
+            return Response.status( Response.Status.NOT_FOUND ).entity( CCommon.languagestring( this, "agentnotfound", p_id ) ).build();
+
+        return CExecution.goaltrigger(
+            Stream.of( l_agent ),
+            p_action,
+            p_trigger,
+            p_literal,
+            true
+        )
+        .map( Throwable::getMessage )
+        .map( i -> Response.status( Response.Status.CONFLICT ).entity( i ).build() )
+        .findAny()
+        .orElseGet( () -> Response.status( Response.Status.OK ).build() );
     }
 
     /**
@@ -297,67 +308,25 @@ public final class CAgentProvider implements IProvider
     @POST
     @Path( "/{id}/trigger/{action}/{trigger}" )
     @Consumes( MediaType.TEXT_PLAIN )
-    public final Response goal( @PathParam( "id" ) final String p_id, @PathParam( "trigger" ) final String p_trigger, final String p_literal )
-    {
-        return this.executetrigger( p_id, p_trigger, p_literal, ( i, j ) -> i.trigger( j ) );
-    }
-
-    // ---------------------------------------------------------------------------------------------------------------------------------------------------------
-
-    /**
-     * triggers the agent based on input data
-     *
-     * @param p_id agent identifier
-     * @param p_trigger trigger type
-     * @param p_literal literal data
-     * @param p_execute consumer function
-     * @return response
-     */
-    private Response executetrigger( final String p_id, final String p_trigger, final String p_literal, final BiConsumer<IAgent<?>, ITrigger> p_execute )
+    public final Response goal( @PathParam( "id" ) final String p_id, @PathParam( "action" ) final String p_action,
+                                @PathParam( "trigger" ) final String p_trigger, final String p_literal )
     {
         // find agent
         final IAgent<?> l_agent = m_agents.get( m_formater.apply( p_id ) );
         if ( l_agent == null )
             return Response.status( Response.Status.NOT_FOUND ).entity( CCommon.languagestring( this, "agentnotfound", p_id ) ).build();
 
-        // parse literal
-        final ILiteral l_literal;
-        try
-        {
-            l_literal = CLiteral.parse( p_literal );
-        }
-        catch ( final Exception l_exception )
-        {
-            return Response.status( Response.Status.BAD_REQUEST ).entity( CCommon.languagestring( this, "literalparse" ) ).build();
-        }
-
-        // parse trigger
-        final ITrigger l_trigger;
-        switch ( p_trigger.toLowerCase( Locale.ROOT ) )
-        {
-            case "addgoal"      :
-                l_trigger = CTrigger.from( ITrigger.EType.ADDGOAL, l_literal );
-                break;
-
-            case "deletegoal"   :
-                l_trigger = CTrigger.from( ITrigger.EType.DELETEGOAL, l_literal );
-                break;
-
-            case "addbelief"    :
-                l_trigger = CTrigger.from( ITrigger.EType.ADDBELIEF, l_literal );
-                break;
-
-            case "deletebelief" :
-                l_trigger = CTrigger.from( ITrigger.EType.DELETEBELIEF, l_literal );
-                break;
-
-            default:
-                return Response.status( Response.Status.BAD_REQUEST ).entity( CCommon.languagestring( this, "triggernotfound", p_trigger ) ).build();
-        }
-
-        // execute trigger
-        p_execute.accept( l_agent, l_trigger );
-        return Response.status( Response.Status.OK ).build();
+        return CExecution.goaltrigger(
+            Stream.of( l_agent ),
+            p_action,
+            p_trigger,
+            p_literal,
+            true
+        )
+        .map( Throwable::getMessage )
+        .map( i -> Response.status( Response.Status.CONFLICT ).entity( i ).build() )
+        .findAny()
+        .orElseGet( () -> Response.status( Response.Status.OK ).build() );
     }
 
 }
