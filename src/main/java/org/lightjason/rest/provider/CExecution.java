@@ -29,6 +29,7 @@ import org.lightjason.agentspeak.language.CLiteral;
 import org.lightjason.agentspeak.language.CRawTerm;
 import org.lightjason.agentspeak.language.ILiteral;
 import org.lightjason.agentspeak.language.ITerm;
+import org.lightjason.agentspeak.language.execution.fuzzy.IFuzzyValue;
 import org.lightjason.agentspeak.language.instantiable.plan.trigger.CTrigger;
 import org.lightjason.agentspeak.language.instantiable.plan.trigger.ITrigger;
 import org.lightjason.rest.CCommon;
@@ -36,7 +37,6 @@ import org.lightjason.rest.CCommon;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.Set;
-import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -150,7 +150,7 @@ public final class CExecution
      */
     @SuppressWarnings( "unchecked" )
     public static Stream<RuntimeException> goaltrigger( final Stream<IAgent<?>> p_agents, final String p_action,
-                                                        final String p_trigger, final String p_data, final boolean p_immediately )
+                                                final String p_trigger, final String p_data, final boolean p_immediately )
     {
         final Set<ITrigger> l_trigger = actionfunction(
             p_action,
@@ -175,10 +175,14 @@ public final class CExecution
 
         return l_trigger.isEmpty()
                ? Stream.of( new RuntimeException( CCommon.languagestring( CExecution.class, "actionunknown", p_action ) ) )
-               : p_agents.parallel().map( i -> {
-                   l_trigger.forEach( j -> i.trigger( j, p_immediately ) );
-                   return null;
-               } ).filter( Objects::nonNull );
+               : p_agents.parallel()
+                         .flatMap( i -> l_trigger.stream().map( j -> i.trigger( j, p_immediately ) ) )
+                         .map( IFuzzyValue::value )
+                         .filter( j -> !j )
+                         .findAny()
+                         .orElseGet( () -> false )
+                ? Stream.of()
+                : Stream.of( new RuntimeException( CCommon.languagestring( CExecution.class, "triggererror", p_action ) ) );
     }
 
     // --- helper functions ------------------------------------------------------------------------------------------------------------------------------------
