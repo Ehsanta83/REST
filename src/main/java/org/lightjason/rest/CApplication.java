@@ -30,6 +30,7 @@ import org.lightjason.rest.provider.IProvider;
 
 import java.text.MessageFormat;
 import java.util.Arrays;
+import java.util.stream.Stream;
 
 
 /**
@@ -64,6 +65,23 @@ public final class CApplication extends ResourceConfig
         );
     }
 
+
+    /**
+     * register an agent with a name and optional groups
+     *
+     * @param p_id agent name / id (case-insensitive)
+     * @param p_agent agent object
+     * @param p_group group names
+     * @return self reference
+     */
+    public final CApplication register( final String p_id, final IAgent<?> p_agent, final Stream<String> p_group )
+    {
+        m_agentsbyname.register( p_id, p_agent );
+        p_group.forEach( i -> m_agentsbygroup.register( i, p_agent ) );
+        return this;
+    }
+
+
     /**
      * register an agent with a name and optional groups
      *
@@ -74,11 +92,15 @@ public final class CApplication extends ResourceConfig
      */
     public final CApplication register( final String p_id, final IAgent<?> p_agent, final String... p_group )
     {
-        m_agentsbyname.register( p_id, p_agent );
-        if ( ( p_group != null ) && ( p_group.length > 0 ) )
-            Arrays.stream( p_group ).forEach( i -> m_agentsbygroup.register( i, p_agent ) );
-        return this;
+        return this.register(
+            p_id,
+            p_agent,
+            ( p_group != null ) && ( p_group.length > 0 )
+            ? Arrays.stream( p_group )
+            : Stream.of()
+        );
     }
+
 
     /**
      * unregister agent by the name
@@ -86,9 +108,34 @@ public final class CApplication extends ResourceConfig
      * @param p_id agent name / id (case-insensitive)
      * @return self refrence
      */
-    public final CApplication unregister( final String p_id )
+    public final CApplication unregisterbyname( final Stream<String> p_id )
     {
-        m_agentsbygroup.unregister( m_agentsbyname.unregister( p_id ) );
+        p_id.forEach( i -> m_agentsbygroup.unregister( m_agentsbyname.unregister( i ) ) );
+        return this;
+    }
+
+
+    /**
+     * unregister agent by the name
+     *
+     * @param p_id agent name / id (case-insensitive)
+     * @return self refrence
+     */
+    public final CApplication unregisterbyname( final String... p_id )
+    {
+        return this.unregisterbyname( Arrays.stream( p_id ) );
+    }
+
+
+    /**
+     * unregister agent by the objct
+     *
+     * @param p_agent agent object
+     * @return self refrence
+     */
+    public final CApplication unregisterbyobject( final Stream<IAgent<?>> p_agent )
+    {
+        m_agentsbygroup.unregister( m_agentsbyname.unregister( p_agent ) );
         return this;
     }
 
@@ -98,11 +145,11 @@ public final class CApplication extends ResourceConfig
      * @param p_agent agent object
      * @return self refrence
      */
-    public final CApplication unregister( final IAgent<?> p_agent )
+    public final CApplication unregisterbyobject( final IAgent<?>... p_agent )
     {
-        m_agentsbygroup.unregister( m_agentsbyname.unregister( p_agent ) );
-        return this;
+        return this.unregisterbyobject( Arrays.stream( p_agent ) );
     }
+
 
     /**
      * unregister all agents from a group
@@ -110,10 +157,22 @@ public final class CApplication extends ResourceConfig
      * @param p_group group name (case-insensitive)
      * @return self refrence
      */
-    public final CApplication unregistergroup( final String p_group )
+    public final CApplication unregisterbygroup( final Stream<String> p_group )
     {
-        m_agentsbyname.unregister( m_agentsbygroup.unregister( p_group ) );
+        p_group.forEach( i -> m_agentsbyname.unregister( m_agentsbygroup.unregister( i ) ) );
         return this;
+    }
+
+
+    /**
+     * unregister all agents from a group
+     *
+     * @param p_group group name (case-insensitive)
+     * @return self refrence
+     */
+    public final CApplication unregisterbygroup( final String... p_group )
+    {
+        return this.unregisterbygroup( Arrays.stream( p_group ) );
     }
 
 }
