@@ -90,7 +90,7 @@ public final class CGroupProvider implements IProvider
     }
 
     @Override
-    public final Stream<IAgent<?>> unregister( final String p_id )
+    public final Stream<? extends IAgent<?>> unregister( final String p_id )
     {
         return m_groups.asMap().remove( m_formater.apply( p_id ) ).stream();
     }

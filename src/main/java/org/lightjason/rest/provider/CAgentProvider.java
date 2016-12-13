@@ -77,19 +77,19 @@ public final class CAgentProvider implements IProvider
     }
 
     @Override
-    public final Stream<IAgent<?>> unregister( final String p_id )
+    public final Stream<? extends IAgent<?>> unregister( final String p_id )
     {
         return Stream.of( m_agents.remove( m_formater.apply( p_id ) ) );
     }
 
     @Override
-    public final Stream<IAgent<?>> unregister( final IAgent<?>... p_agent )
+    public final Stream<? extends IAgent<?>> unregister( final IAgent<?>... p_agent )
     {
         return this.unregister( Arrays.stream( p_agent ) );
     }
 
     @Override
-    public final Stream<IAgent<?>> unregister( final Stream<? extends IAgent<?>> p_agent )
+    public final Stream<? extends IAgent<?>> unregister( final Stream<? extends IAgent<?>> p_agent )
     {
         return p_agent
             .map( i -> {

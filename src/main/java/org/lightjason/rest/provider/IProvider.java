@@ -49,7 +49,7 @@ public interface IProvider
      * @param p_id agent name / id (case insensitive )
      * @return stream of removed agents
      */
-    Stream<IAgent<?>> unregister( final String p_id );
+    Stream<? extends IAgent<?>> unregister( final String p_id );
 
     /**
      * unregister agent by the objct
