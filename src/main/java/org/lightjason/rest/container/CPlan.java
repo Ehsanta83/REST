@@ -47,7 +47,7 @@ public final class CPlan implements IPlan
     /**
      * successfully runs
      */
-    @XmlElement( name = "sucess" )
+    @XmlElement( name = "success" )
     private final long m_successful;
     /**
      * failed runs
