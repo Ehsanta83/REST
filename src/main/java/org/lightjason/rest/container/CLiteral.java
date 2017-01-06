@@ -56,7 +56,7 @@ public final class CLiteral implements ITerm
     /**
      * literal values
      */
-    @XmlElement( name = "values" )
+    @XmlElement( name = "value" )
     private final List<ITerm> m_value;
     /**
      * annotation values
