@@ -29,6 +29,7 @@ import org.lightjason.agentspeak.language.ILiteral;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -225,4 +226,9 @@ public final class CAgentContainer<T> implements IAgentContainer
         return this;
     }
 
+    @Override
+    public final String toString()
+    {
+        return MessageFormat.format( "{0} ({1} / {2}) {3} {4} {5} {6}", m_id, m_cycle, m_sleeping, m_belief, m_plans, m_rules, m_runningplan );
+    }
 }

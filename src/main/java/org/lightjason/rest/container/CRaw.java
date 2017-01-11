@@ -49,4 +49,9 @@ public final class CRaw<T> implements ITerm
         m_value = p_value;
     }
 
+    @Override
+    public final String toString()
+    {
+        return m_value.toString();
+    }
 }

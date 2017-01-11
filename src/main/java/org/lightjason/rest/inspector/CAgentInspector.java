@@ -100,4 +100,5 @@ public final class CAgentInspector implements IAgentInspector
     {
         return m_node;
     }
+
 }

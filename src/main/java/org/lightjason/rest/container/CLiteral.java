@@ -28,6 +28,7 @@ import org.lightjason.agentspeak.language.variable.IVariable;
 
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import java.text.MessageFormat;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -93,5 +94,11 @@ public final class CLiteral implements ITerm
             return new CVariable( p_term.functor(), p_term.raw() );
 
         return new CRaw<>( p_term.raw() );
+    }
+
+    @Override
+    public final String toString()
+    {
+        return MessageFormat.format( "{0}{1}{2}{3}{4}", m_parallel ? "@" : "", m_negated ? "~" : "", m_functor, m_value, m_annotation );
     }
 }

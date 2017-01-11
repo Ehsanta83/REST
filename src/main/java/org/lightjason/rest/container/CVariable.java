@@ -25,6 +25,7 @@ package org.lightjason.rest.container;
 
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import java.text.MessageFormat;
 
 
 /**
@@ -54,5 +55,11 @@ public final class CVariable implements ITerm
     {
         m_functor = p_functor;
         m_value = p_value;
+    }
+
+    @Override
+    public final String toString()
+    {
+        return MessageFormat.format( "{0}({1})", m_functor, m_value );
     }
 }
