@@ -23,7 +23,7 @@
 
 package org.lightjason.rest.inspector;
 
-import org.apache.commons.lang3.tuple.ImmutableTriple;
+import org.apache.commons.lang3.tuple.Triple;
 import org.lightjason.agentspeak.language.ILiteral;
 import org.lightjason.agentspeak.language.instantiable.plan.IPlan;
 import org.lightjason.agentspeak.language.instantiable.rule.IRule;
@@ -73,7 +73,7 @@ public final class CAgentInspector implements IAgentInspector
     }
 
     @Override
-    public final void inspectplans( final Stream<ImmutableTriple<IPlan, Long, Long>> p_value )
+    public final void inspectplans( final Stream<Triple<IPlan, Long, Long>> p_value )
     {
         p_value.sequential().forEach( m_node::setPlan );
     }

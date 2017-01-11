@@ -23,7 +23,7 @@
 
 package org.lightjason.rest.container;
 
-import org.apache.commons.lang3.tuple.ImmutableTriple;
+import org.apache.commons.lang3.tuple.Triple;
 import org.lightjason.agentspeak.language.ILiteral;
 
 import javax.xml.bind.annotation.XmlElement;
@@ -197,7 +197,7 @@ public final class CAgentContainer<T> implements IAgentContainer
      * @param p_plan plan object
      * @return self reference
      */
-    public final CAgentContainer<T> setPlan( final ImmutableTriple<org.lightjason.agentspeak.language.instantiable.plan.IPlan, Long, Long> p_plan )
+    public final CAgentContainer<T> setPlan( final Triple<org.lightjason.agentspeak.language.instantiable.plan.IPlan, Long, Long> p_plan )
     {
         m_plans.add( new CPlan( p_plan.getLeft(), p_plan.getMiddle(), p_plan.getMiddle() ) );
         return this;
