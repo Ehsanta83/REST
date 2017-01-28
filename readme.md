@@ -15,6 +15,7 @@
 * [Doxygen](http://www.doxygen.org/) with [GraphViz](http://www.graphviz.org/)
 * [Source code documentation](http://lightjason.github.io/REST/)
 * [Open Hub Code Statistic](https://www.openhub.net/p/LightJason-REST)
+* [Libraries.io Statistic](https://libraries.io/github/LightJason/REST)
 
 
 ## Usage
