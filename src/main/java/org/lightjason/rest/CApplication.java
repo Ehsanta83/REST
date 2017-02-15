@@ -41,11 +41,11 @@ public final class CApplication extends ResourceConfig
     /**
      * agent provider
      */
-    private final IProvider m_agentsbyname = new CAgentProvider();
+    private final IProvider<IAgent<?>> m_agentsbyname = new CAgentProvider();
     /**
      * agent group provider
      */
-    private final IProvider m_agentsbygroup = m_agentsbyname.dependprovider()
+    private final IProvider<IAgent<?>> m_agentsbygroup = m_agentsbyname.dependprovider()
                                                             .findFirst()
                                                             .orElseThrow( () -> new RuntimeException(
                                                                 CCommon.languagestring( this, "nogroupprovider" )

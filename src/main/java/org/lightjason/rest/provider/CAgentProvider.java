@@ -54,7 +54,7 @@ import java.util.stream.Stream;
  * an agent as XML and JSON request
  */
 @Path( "/agent" )
-public final class CAgentProvider implements IProvider
+public final class CAgentProvider implements IProvider<IAgent<?>>
 {
     /**
      * function to format agent identifier
@@ -70,7 +70,7 @@ public final class CAgentProvider implements IProvider
 
 
     @Override
-    public final IProvider register( final String p_id, final IAgent<?> p_agent )
+    public final IProvider<IAgent<?>> register( final String p_id, final IAgent<?> p_agent )
     {
         m_agents.put( m_formater.apply( p_id ), p_agent );
         return this;
@@ -99,7 +99,7 @@ public final class CAgentProvider implements IProvider
     }
 
     @Override
-    public final Stream<IProvider> dependprovider()
+    public final Stream<IProvider<IAgent<?>>> dependprovider()
     {
         return Stream.of( new CGroupProvider( m_agents ) );
     }

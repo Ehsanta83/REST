@@ -55,7 +55,7 @@ import java.util.stream.Stream;
  * agent group provider
  */
 @Path( "/agentgroup" )
-public final class CGroupProvider implements IProvider
+public final class CGroupProvider implements IProvider<IAgent<?>>
 {
     /**
      * function to format agent identifier
@@ -83,7 +83,7 @@ public final class CGroupProvider implements IProvider
     // --- agent register calls --------------------------------------------------------------------------------------------------------------------------------
 
     @Override
-    public final IProvider register( final String p_id, final IAgent<?> p_agent )
+    public final IProvider<IAgent<?>> register( final String p_id, final IAgent<?> p_agent )
     {
         m_groups.put( m_formater.apply( p_id ), p_agent );
         return this;
@@ -111,7 +111,7 @@ public final class CGroupProvider implements IProvider
     }
 
     @Override
-    public final Stream<IProvider> dependprovider()
+    public final Stream<IProvider<IAgent<?>>> dependprovider()
     {
         return Stream.of();
     }

@@ -23,55 +23,53 @@
 
 package org.lightjason.rest.provider;
 
-import org.lightjason.agentspeak.agent.IAgent;
-
 import java.util.stream.Stream;
 
 
 /**
  * provider interface
  */
-public interface IProvider
+public interface IProvider<T>
 {
 
     /**
-     * register an agent with a name
+     * register an object with a name
      *
-     * @param p_id agent name / id (case-insensitive)
-     * @param p_agent agent object
+     * @param p_id id (case-insensitive)
+     * @param p_object object
      * @return self reference
      */
-    IProvider register( final String p_id, final IAgent<?> p_agent );
+    IProvider<T> register( final String p_id, final T p_object );
 
     /**
-     * unregister agent by the name
+     * unregister object by the name
      *
-     * @param p_id agent name / id (case insensitive )
-     * @return stream of removed agents
+     * @param p_id id (case insensitive )
+     * @return stream of removed objects
      */
-    Stream<? extends IAgent<?>> unregister( final String p_id );
+    Stream<? extends T> unregister( final String p_id );
 
     /**
-     * unregister agent by the objct
+     * unregister objects
      *
-     * @param p_agent agent object
-     * @return stream of removed agents
+     * @param p_object objects
+     * @return stream of removed objects
      */
-    Stream<? extends IAgent<?>> unregister( final IAgent<?>... p_agent );
+    Stream<? extends T> unregister( final T... p_object );
 
     /**
-     * unregister agent by the objct
+     * unregister objects
      *
-     * @param p_agent agent stream
-     * @return stream of removed agents
+     * @param p_objects object stream
+     * @return stream of removed objects
      */
-    Stream<? extends IAgent<?>> unregister( final Stream<? extends IAgent<?>> p_agent );
+    Stream<? extends T> unregister( final Stream<? extends T> p_objects );
 
     /**
      * returns a depend provider
      *
      * @return provider stream
      */
-    Stream<IProvider> dependprovider();
+    Stream<IProvider<T>> dependprovider();
 
 }
