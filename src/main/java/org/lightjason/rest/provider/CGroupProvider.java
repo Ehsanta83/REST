@@ -44,9 +44,7 @@ import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Locale;
 import java.util.Set;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -57,10 +55,6 @@ import java.util.stream.Stream;
 @Path( "/agentgroup" )
 public final class CGroupProvider implements IProvider<IAgent<?>>
 {
-    /**
-     * function to format agent identifier
-     */
-    private final Function<String, String> m_formater = ( i ) -> i.trim().toLowerCase( Locale.ROOT );
     /**
      * group map
      */
@@ -80,19 +74,20 @@ public final class CGroupProvider implements IProvider<IAgent<?>>
         m_agentsbyname = p_namereference;
     }
 
+
     // --- agent register calls --------------------------------------------------------------------------------------------------------------------------------
 
     @Override
     public final IProvider<IAgent<?>> register( final String p_id, final IAgent<?> p_agent )
     {
-        m_groups.put( m_formater.apply( p_id ), p_agent );
+        m_groups.put( CCommon.urlformat( p_id ), p_agent );
         return this;
     }
 
     @Override
     public final Stream<? extends IAgent<?>> unregister( final String p_id )
     {
-        return m_groups.asMap().remove( m_formater.apply( p_id ) ).stream();
+        return m_groups.asMap().remove( CCommon.urlformat( p_id ) ).stream();
     }
 
     @Override
@@ -331,7 +326,7 @@ public final class CGroupProvider implements IProvider<IAgent<?>>
      */
     private Collection<IAgent<?>> group( final String p_group )
     {
-        final Collection<IAgent<?>> l_data = m_groups.get( m_formater.apply( p_group ) );
+        final Collection<IAgent<?>> l_data = m_groups.get( p_group );
         return l_data == null
                ? Collections.emptySet()
                : l_data;
