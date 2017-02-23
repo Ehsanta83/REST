@@ -26,9 +26,7 @@ package org.lightjason.rest.provider;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.google.common.collect.Maps;
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.lightjason.agentspeak.agent.IAgent;
-import org.lightjason.agentspeak.generator.IGenerator;
+import org.lightjason.agentspeak.generator.IAgentGenerator;
 import org.lightjason.rest.CCommon;
 
 import javax.ws.rs.Consumes;
@@ -39,47 +37,45 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.util.AbstractMap;
 import java.util.Arrays;
-import java.util.function.Function;
 import java.util.stream.Stream;
 
 
 /**
  * agent generator provider
  */
-@Path( "/generator" )
-public final class CGeneratorProvider implements IProvider<IGenerator<?>>
+@Path( "/agentgenerator" )
+public final class CAgentGeneratorProvider implements IProvider<IAgentGenerator<?>>
 {
     /**
      * generator map
      */
-    private final BiMap<String, AbstractMap.Entry<IGenerator<?>, Function<IAgent<?>, IAgent<?>>>> m_generator = Maps.synchronizedBiMap( HashBiMap.create() );
+    private final BiMap<String, IGeneratorWrapper<IAgentGenerator<?>>> m_generator = Maps.synchronizedBiMap( HashBiMap.create() );
 
 
     // --- generator register calls ----------------------------------------------------------------------------------------------------------------------------
 
     @Override
-    public final IProvider<IGenerator<?>> register( final String p_id, final IGenerator<?> p_generator )
+    public final IProvider<IAgentGenerator<?>> register( final String p_id, final IAgentGenerator<?> p_generator )
     {
-        m_generator.putIfAbsent( CCommon.urlformat( p_id ), new ImmutablePair<>( p_generator, Function.identity() ) );
+        m_generator.putIfAbsent( CCommon.urlformat( p_id ), new CAgentGeneratorWrapper( p_generator, ( i) -> { } ) );
         return this;
     }
 
     @Override
-    public final Stream<? extends IGenerator<?>> unregister( final String p_id )
+    public final Stream<? extends IAgentGenerator<?>> unregister( final String p_id )
     {
-        return Stream.of( m_generator.remove( CCommon.urlformat( p_id ) ).getKey() );
+        return Stream.of( m_generator.remove( CCommon.urlformat( p_id ) ).generator() );
     }
 
     @Override
-    public final Stream<? extends IGenerator<?>> unregister( final IGenerator<?>... p_generator )
+    public final Stream<? extends IAgentGenerator<?>> unregister( final IAgentGenerator<?>... p_generator )
     {
         return this.unregister( Arrays.stream( p_generator ) );
     }
 
     @Override
-    public final Stream<? extends IGenerator<?>> unregister( final Stream<? extends IGenerator<?>> p_generator )
+    public final Stream<? extends IAgentGenerator<?>> unregister( final Stream<? extends IAgentGenerator<?>> p_generator )
     {
         return p_generator
             .map( i -> {
@@ -89,7 +85,7 @@ public final class CGeneratorProvider implements IProvider<IGenerator<?>>
     }
 
     @Override
-    public final Stream<IProvider<IGenerator<?>>> dependprovider()
+    public final Stream<IProvider<IAgentGenerator<?>>> dependprovider()
     {
         return Stream.of();
     }
@@ -120,6 +116,7 @@ public final class CGeneratorProvider implements IProvider<IGenerator<?>>
     @Path( "/generate/single" )
     public final Object generatesingle()
     {
+        m_generator.values().parallelStream().forEach( IGeneratorWrapper::generate );
         return Response.status( Response.Status.OK ).build();
     }
 
@@ -135,6 +132,7 @@ public final class CGeneratorProvider implements IProvider<IGenerator<?>>
     @Consumes( MediaType.TEXT_PLAIN )
     public final Object generatemultiple( final int p_number )
     {
+        m_generator.values().parallelStream().forEach( i -> i.generate( p_number ) );
         return Response.status( Response.Status.OK ).build();
     }
 
@@ -149,10 +147,11 @@ public final class CGeneratorProvider implements IProvider<IGenerator<?>>
     @Path( "/{id}/generate/single" )
     public final Object generatesinglebyid( @PathParam( "id" ) final String p_id )
     {
-        final AbstractMap.Entry<IGenerator<?>, Function<IAgent<?>, IAgent<?>>> l_generator = m_generator.get( p_id );
+        final IGeneratorWrapper l_generator = m_generator.get( p_id );
         if ( l_generator == null )
             return Response.status( Response.Status.NOT_FOUND ).entity( CCommon.languagestring( this, "generatornotfound", p_id ) ).build();
 
+        l_generator.generate();
         return Response.status( Response.Status.OK ).build();
     }
 
@@ -169,10 +168,11 @@ public final class CGeneratorProvider implements IProvider<IGenerator<?>>
     @Consumes( MediaType.TEXT_PLAIN )
     public final Object generatemultiplebyid( @PathParam( "id" ) final String p_id, final int p_number )
     {
-        final AbstractMap.Entry<IGenerator<?>, Function<IAgent<?>, IAgent<?>>> l_generator = m_generator.get( p_id );
+        final IGeneratorWrapper l_generator = m_generator.get( p_id );
         if ( l_generator == null )
             return Response.status( Response.Status.NOT_FOUND ).entity( CCommon.languagestring( this, "generatornotfound", p_id ) ).build();
 
+        l_generator.generate( p_number );
         return Response.status( Response.Status.OK ).build();
     }
 

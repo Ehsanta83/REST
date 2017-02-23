@@ -53,7 +53,7 @@ import java.util.stream.Stream;
  * agent group provider
  */
 @Path( "/agentgroup" )
-public final class CGroupProvider implements IProvider<IAgent<?>>
+public final class CAgentGroupProvider implements IProvider<IAgent<?>>
 {
     /**
      * group map
@@ -69,7 +69,7 @@ public final class CGroupProvider implements IProvider<IAgent<?>>
      *
      * @param p_namereference bimap with name and agent object
      */
-    public CGroupProvider( final BiMap<String, IAgent<?>> p_namereference )
+    public CAgentGroupProvider( final BiMap<String, IAgent<?>> p_namereference )
     {
         m_agentsbyname = p_namereference;
     }

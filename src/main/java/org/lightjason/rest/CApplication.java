@@ -25,9 +25,9 @@ package org.lightjason.rest;
 
 import org.glassfish.jersey.server.ResourceConfig;
 import org.lightjason.agentspeak.agent.IAgent;
-import org.lightjason.agentspeak.generator.IGenerator;
+import org.lightjason.agentspeak.generator.IAgentGenerator;
 import org.lightjason.rest.provider.CAgentProvider;
-import org.lightjason.rest.provider.CGeneratorProvider;
+import org.lightjason.rest.provider.CAgentGeneratorProvider;
 import org.lightjason.rest.provider.IProvider;
 
 import java.text.MessageFormat;
@@ -41,9 +41,9 @@ import java.util.stream.Stream;
 public final class CApplication extends ResourceConfig
 {
     /**
-     * generator provider
+     * agent generator provider
      */
-    private final IProvider<IGenerator<?>> m_generator = new CGeneratorProvider();
+    private final IProvider<IAgentGenerator<?>> m_generator = new CAgentGeneratorProvider();
     /**
      * agent provider
      */

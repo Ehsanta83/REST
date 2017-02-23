@@ -93,7 +93,7 @@ public final class CAgentProvider implements IProvider<IAgent<?>>
     @Override
     public final Stream<IProvider<IAgent<?>>> dependprovider()
     {
-        return Stream.of( new CGroupProvider( m_agents ) );
+        return Stream.of( new CAgentGroupProvider( m_agents ) );
     }
 
 
