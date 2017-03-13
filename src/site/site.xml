@@ -21,14 +21,19 @@
 
 -->
 <project xmlns="http://maven.apache.org/DECORATION/1.6.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/DECORATION/1.6.0 http://maven.apache.org/xsd/decoration-1.6.0.xsd">
+    <skin>
+        <groupId>org.apache.maven.skins</groupId>
+        <artifactId>maven-fluido-skin</artifactId>
+        <version>1.6</version>
+    </skin>
     <body>
-        <links>
+        <menu ref="modules" />
+        <menu ref="reports"/>
+        <menu name="Source Documentation">
             <item name="Source Documentation" href="sources/index.html"/>
             <item name="Repository" href="http://github.com/LightJason/REST" />
             <item name="OpenHub" href="http://www.openhub.net/p/LightJason-REST"/>
             <item name="LightJason" href="http://lightjason.org"/>
-        </links>
-        <menu ref="modules" />
-        <menu ref="reports"/>
+        </menu>
     </body>
 </project>
