@@ -56,6 +56,7 @@
         <url>https://github.com/LightJason/REST</url>
         <connection>scm:git:git://github.com:LightJason/REST.git</connection>
         <developerConnection>scm:git:git@github.com:LightJason/REST.git</developerConnection>
+        <tag>${artifactId}-${version}</tag>
     </scm>
 
     <distributionManagement>
