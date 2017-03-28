@@ -55,19 +55,19 @@ public final class CAgentGeneratorWrapper implements IGeneratorWrapper<IAgentGen
      * @param p_consumer consumer for agents
      * @tparam T agent type
      */
-    public CAgentGeneratorWrapper( final IAgentGenerator<?> p_generator, final Consumer<IAgent<?>> p_consumer )
+    private CAgentGeneratorWrapper( final IAgentGenerator<?> p_generator, final Consumer<IAgent<?>> p_consumer )
     {
-        this( p_generator, null, p_consumer );
+        this( p_generator, p_consumer, null );
     }
 
     /**
      * ctor
      *
-     * @param p_supplier supplier for agent generating call
      * @param p_consumer consumer for agents
+     * @param p_supplier supplier for agent generating call
      * @tparam T agent type
      */
-    public CAgentGeneratorWrapper( final IAgentGenerator<?> p_generator, final Supplier<Object[]> p_supplier, final Consumer<IAgent<?>> p_consumer )
+    private CAgentGeneratorWrapper( final IAgentGenerator<?> p_generator, final Consumer<IAgent<?>> p_consumer, final Supplier<Object[]> p_supplier )
     {
         m_generator = p_generator;
         m_supplier = p_supplier;
@@ -104,4 +104,30 @@ public final class CAgentGeneratorWrapper implements IGeneratorWrapper<IAgentGen
     {
         return ( p_object != null ) && ( ( p_object instanceof IGeneratorWrapper ) || ( p_object instanceof IGenerator<?> ) ) && ( this.hashCode() == p_object.hashCode() );
     }
+
+    /**
+     * factory
+     *
+     * @param p_generator agent generator
+     * @param p_consume consumer
+     * @return wrapper instance
+     */
+    public static IGeneratorWrapper<IAgentGenerator<?>> from( final IAgentGenerator<?> p_generator, final Consumer<IAgent<?>> p_consume )
+    {
+        return new CAgentGeneratorWrapper( p_generator, p_consume );
+    }
+
+    /**
+     * factory
+     *
+     * @param p_generator agent generator
+     * @param p_consumer consumer
+     * @param p_supplier supplier for genertor parameter
+     * @return wrapper instance
+     */
+    public static IGeneratorWrapper<IAgentGenerator<?>> from( final IAgentGenerator<?> p_generator, final Consumer<IAgent<?>> p_consumer, final Supplier<Object[]> p_supplier )
+    {
+        return new CAgentGeneratorWrapper( p_generator, p_consumer, p_supplier );
+    }
+
 }

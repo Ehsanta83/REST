@@ -26,7 +26,6 @@ package org.lightjason.rest.provider;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.google.common.collect.Maps;
-import org.lightjason.agentspeak.generator.IAgentGenerator;
 import org.lightjason.rest.CCommon;
 
 import javax.ws.rs.Consumes;
@@ -45,39 +44,39 @@ import java.util.stream.Stream;
  * agent generator provider
  */
 @Path( "/agentgenerator" )
-public final class CAgentGeneratorProvider implements IProvider<IAgentGenerator<?>>
+public final class CAgentGeneratorProvider implements IProvider<IGeneratorWrapper<?>>
 {
     /**
      * generator map
      */
-    private final BiMap<String, IGeneratorWrapper<IAgentGenerator<?>>> m_generator = Maps.synchronizedBiMap( HashBiMap.create() );
+    private final BiMap<String, IGeneratorWrapper<?>> m_generator = Maps.synchronizedBiMap( HashBiMap.create() );
 
 
     // --- generator register calls ----------------------------------------------------------------------------------------------------------------------------
 
     @Override
-    public final IProvider<IAgentGenerator<?>> register( final String p_id, final IAgentGenerator<?> p_generator )
+    public final IProvider<IGeneratorWrapper<?>> register( final String p_id, final IGeneratorWrapper<?> p_object )
     {
-        m_generator.putIfAbsent( CCommon.urlformat( p_id ), new CAgentGeneratorWrapper( p_generator, ( i) -> { } ) );
+        m_generator.putIfAbsent( CCommon.urlformat( p_id ), p_object );
         return this;
     }
 
     @Override
-    public final Stream<? extends IAgentGenerator<?>> unregister( final String p_id )
+    public final Stream<? extends IGeneratorWrapper<?>> unregister( final String p_id )
     {
-        return Stream.of( m_generator.remove( CCommon.urlformat( p_id ) ).generator() );
+        return Stream.of( m_generator.remove( CCommon.urlformat( p_id ) ) );
     }
 
     @Override
-    public final Stream<? extends IAgentGenerator<?>> unregister( final IAgentGenerator<?>... p_generator )
+    public final Stream<? extends IGeneratorWrapper<?>> unregister( final IGeneratorWrapper<?>[] p_object )
     {
-        return this.unregister( Arrays.stream( p_generator ) );
+        return this.unregister( Arrays.stream( p_object ) );
     }
 
     @Override
-    public final Stream<? extends IAgentGenerator<?>> unregister( final Stream<? extends IAgentGenerator<?>> p_generator )
+    public final Stream<? extends IGeneratorWrapper<?>> unregister( final Stream<? extends IGeneratorWrapper<?>> p_objects )
     {
-        return p_generator
+        return p_objects
             .map( i -> {
                 m_generator.inverse().remove( i );
                 return i;
@@ -85,7 +84,7 @@ public final class CAgentGeneratorProvider implements IProvider<IAgentGenerator<
     }
 
     @Override
-    public final Stream<IProvider<IAgentGenerator<?>>> dependprovider()
+    public final Stream<IProvider<IGeneratorWrapper<?>>> dependprovider()
     {
         return Stream.of();
     }

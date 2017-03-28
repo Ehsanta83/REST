@@ -26,12 +26,16 @@ package org.lightjason.rest;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.lightjason.agentspeak.agent.IAgent;
 import org.lightjason.agentspeak.generator.IAgentGenerator;
+import org.lightjason.rest.provider.CAgentGeneratorWrapper;
 import org.lightjason.rest.provider.CAgentProvider;
 import org.lightjason.rest.provider.CAgentGeneratorProvider;
+import org.lightjason.rest.provider.IGeneratorWrapper;
 import org.lightjason.rest.provider.IProvider;
 
 import java.text.MessageFormat;
 import java.util.Arrays;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 
@@ -43,7 +47,7 @@ public final class CApplication extends ResourceConfig
     /**
      * agent generator provider
      */
-    private final IProvider<IAgentGenerator<?>> m_generator = new CAgentGeneratorProvider();
+    private final IProvider<IGeneratorWrapper<?>> m_generator = new CAgentGeneratorProvider();
     /**
      * agent provider
      */
@@ -52,10 +56,11 @@ public final class CApplication extends ResourceConfig
      * agent group provider
      */
     private final IProvider<IAgent<?>> m_agentsbygroup = m_agentsbyname.dependprovider()
-                                                            .findFirst()
-                                                            .orElseThrow( () -> new RuntimeException(
-                                                                CCommon.languagestring( this, "nogroupprovider" )
-                                                            ) );
+                                                                       .findFirst()
+                                                                       .orElseThrow( () -> new RuntimeException(
+                                                                           CCommon.languagestring( this, "nogroupprovider" )
+                                                                       ) );
+
 
     /**
      * ctor
@@ -72,6 +77,8 @@ public final class CApplication extends ResourceConfig
         );
     }
 
+
+    // --- agent & group provider ------------------------------------------------------------------------------------------------------------------------------
 
     /**
      * register an agent with a name and optional groups
@@ -106,6 +113,31 @@ public final class CApplication extends ResourceConfig
             ? Arrays.stream( p_group )
             : Stream.of()
         );
+    }
+
+
+    /**
+     * unregister all agents from a group
+     *
+     * @param p_group group name (case-insensitive)
+     * @return self refrence
+     */
+    public final CApplication unregisterbygroup( final Stream<String> p_group )
+    {
+        p_group.forEach( i -> m_agentsbyname.unregister( m_agentsbygroup.unregister( i ) ) );
+        return this;
+    }
+
+
+    /**
+     * unregister all agents from a group
+     *
+     * @param p_group group name (case-insensitive)
+     * @return self refrence
+     */
+    public final CApplication unregisterbygroup( final String... p_group )
+    {
+        return this.unregisterbygroup( Arrays.stream( p_group ) );
     }
 
 
@@ -146,6 +178,7 @@ public final class CApplication extends ResourceConfig
         return this;
     }
 
+
     /**
      * unregister agent by the objct
      *
@@ -157,29 +190,42 @@ public final class CApplication extends ResourceConfig
         return this.unregisterbyobject( Arrays.stream( p_agent ) );
     }
 
+    // ---------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+    // --- generator provider ----------------------------------------------------------------------------------------------------------------------------------
 
     /**
-     * unregister all agents from a group
+     * register a generator with a consumer
      *
-     * @param p_group group name (case-insensitive)
-     * @return self refrence
+     * @param p_id generator name
+     * @param p_generator generator
+     * @param p_consumer agent consumer
+     * @return self reference
      */
-    public final CApplication unregisterbygroup( final Stream<String> p_group )
+    public final CApplication register( final String p_id, final IAgentGenerator<?> p_generator, final Consumer<IAgent<?>> p_consumer )
     {
-        p_group.forEach( i -> m_agentsbyname.unregister( m_agentsbygroup.unregister( i ) ) );
+        m_generator.register( p_id, CAgentGeneratorWrapper.from( p_generator, p_consumer ) );
         return this;
     }
 
 
     /**
-     * unregister all agents from a group
+     * register a generator with a consumer and supplier
      *
-     * @param p_group group name (case-insensitive)
-     * @return self refrence
+     * @param p_id generator name
+     * @param p_generator generator
+     * @param p_consumer agent consumer
+     * @param p_supplier agent supplier
+     * @return self reference
      */
-    public final CApplication unregisterbygroup( final String... p_group )
+    public final CApplication register( final String p_id, final IAgentGenerator<?> p_generator, final Consumer<IAgent<?>> p_consumer, final
+                                        Supplier<Object[]> p_supplier )
     {
-        return this.unregisterbygroup( Arrays.stream( p_group ) );
+        m_generator.register( p_id, CAgentGeneratorWrapper.from( p_generator, p_consumer, p_supplier ) );
+        return this;
     }
+
+    // ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
 }
