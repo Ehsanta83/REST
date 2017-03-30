@@ -202,6 +202,18 @@ public final class CCommon
     // ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
     /**
+     * returns string which is formated
+     * for the use within in a URL
+     *
+     * @param p_value string
+     * @return URL formated string
+     */
+    public static String urlformat( final String p_value )
+    {
+        return p_value.trim().replaceAll( "[^a-zA-Z0-9-]", "" );
+    }
+
+    /**
      * returns the language depend string on any object
      *
      * @param p_source any object

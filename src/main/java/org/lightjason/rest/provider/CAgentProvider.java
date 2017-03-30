@@ -42,24 +42,17 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.text.MessageFormat;
 import java.util.Arrays;
-import java.util.Locale;
 import java.util.Set;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 
 /**
- * singleton webservice provider to control
- * an agent as XML and JSON request
+ * agent provider
  */
 @Path( "/agent" )
 public final class CAgentProvider implements IProvider<IAgent<?>>
 {
-    /**
-     * function to format agent identifier
-     */
-    private final Function<String, String> m_formater = (i) -> i.trim().toLowerCase( Locale.ROOT );
     /**
      * map with agents
      **/
@@ -68,18 +61,17 @@ public final class CAgentProvider implements IProvider<IAgent<?>>
 
     // --- agent register calls --------------------------------------------------------------------------------------------------------------------------------
 
-
     @Override
     public final IProvider<IAgent<?>> register( final String p_id, final IAgent<?> p_agent )
     {
-        m_agents.put( m_formater.apply( p_id ), p_agent );
+        m_agents.putIfAbsent( CCommon.urlformat( p_id ), p_agent );
         return this;
     }
 
     @Override
     public final Stream<? extends IAgent<?>> unregister( final String p_id )
     {
-        return Stream.of( m_agents.remove( m_formater.apply( p_id ) ) );
+        return Stream.of( m_agents.remove( CCommon.urlformat( p_id ) ) );
     }
 
     @Override
@@ -101,7 +93,7 @@ public final class CAgentProvider implements IProvider<IAgent<?>>
     @Override
     public final Stream<IProvider<IAgent<?>>> dependprovider()
     {
-        return Stream.of( new CGroupProvider( m_agents ) );
+        return Stream.of( new CAgentGroupProvider( m_agents ) );
     }
 
 
@@ -131,7 +123,7 @@ public final class CAgentProvider implements IProvider<IAgent<?>>
     @Produces( MediaType.APPLICATION_JSON )
     public final Object view( @PathParam( "id" ) final String p_id )
     {
-        final IAgent<?> l_agent = m_agents.get( m_formater.apply( p_id ) );
+        final IAgent<?> l_agent = m_agents.get( p_id );
         return l_agent == null
                ? Response.status( Response.Status.NOT_FOUND ).entity( CCommon.languagestring( this, "agentnotfound", p_id ) ).build()
                : l_agent.inspect( new CAgentInspector( p_id ) ).findFirst().orElseThrow( RuntimeException::new ).get();
@@ -161,7 +153,7 @@ public final class CAgentProvider implements IProvider<IAgent<?>>
     @Path( "/{id}/cycle" )
     public final Response cycle( @PathParam( "id" ) final String p_id )
     {
-        final IAgent<?> l_agent = m_agents.get( m_formater.apply( p_id ) );
+        final IAgent<?> l_agent = m_agents.get( p_id );
         if ( l_agent == null )
             return Response.status( Response.Status.NOT_FOUND ).entity( CCommon.languagestring( this, "agentnotfound", p_id ) ).build();
 
@@ -199,7 +191,7 @@ public final class CAgentProvider implements IProvider<IAgent<?>>
     @Consumes( MediaType.TEXT_PLAIN )
     public final Response sleep( @PathParam( "id" ) final String p_id, @QueryParam( "time" ) final long p_time, final String p_data )
     {
-        final IAgent<?> l_agent = m_agents.get( m_formater.apply( p_id ) );
+        final IAgent<?> l_agent = m_agents.get( p_id );
         if ( l_agent == null )
             return Response.status( Response.Status.NOT_FOUND ).entity( CCommon.languagestring( this, "agentnotfound", p_id ) ).build();
 
@@ -232,7 +224,7 @@ public final class CAgentProvider implements IProvider<IAgent<?>>
     @Consumes( MediaType.TEXT_PLAIN )
     public final Response wakeup( @PathParam( "id" ) final String p_id, final String p_data )
     {
-        final IAgent<?> l_agent = m_agents.get( m_formater.apply( p_id ) );
+        final IAgent<?> l_agent = m_agents.get( p_id );
         if ( l_agent == null )
             return Response.status( Response.Status.NOT_FOUND ).entity( CCommon.languagestring( this, "agentnotfound", p_id ) ).build();
 
@@ -253,7 +245,7 @@ public final class CAgentProvider implements IProvider<IAgent<?>>
     @Consumes( MediaType.TEXT_PLAIN )
     public final Response belief( @PathParam( "id" ) final String p_id, @PathParam( "action" ) final String p_action, final String p_literal )
     {
-        final IAgent<?> l_agent = m_agents.get( m_formater.apply( p_id ) );
+        final IAgent<?> l_agent = m_agents.get( p_id );
         if ( l_agent == null )
             return Response.status( Response.Status.NOT_FOUND ).entity( CCommon.languagestring( this, "agentnotfound", p_id ) ).build();
 
@@ -278,7 +270,7 @@ public final class CAgentProvider implements IProvider<IAgent<?>>
     public final Response goalimmediately( @PathParam( "id" ) final String p_id, @PathParam( "action" ) final String p_action,
                                            @PathParam( "trigger" ) final String p_trigger, final String p_literal )
     {
-        final IAgent<?> l_agent = m_agents.get( m_formater.apply( p_id ) );
+        final IAgent<?> l_agent = m_agents.get( p_id );
         if ( l_agent == null )
             return Response.status( Response.Status.NOT_FOUND ).entity( CCommon.languagestring( this, "agentnotfound", p_id ) ).build();
 
@@ -309,7 +301,7 @@ public final class CAgentProvider implements IProvider<IAgent<?>>
     public final Response goal( @PathParam( "id" ) final String p_id, @PathParam( "action" ) final String p_action,
                                 @PathParam( "trigger" ) final String p_trigger, final String p_literal )
     {
-        final IAgent<?> l_agent = m_agents.get( m_formater.apply( p_id ) );
+        final IAgent<?> l_agent = m_agents.get( p_id );
         if ( l_agent == null )
             return Response.status( Response.Status.NOT_FOUND ).entity( CCommon.languagestring( this, "agentnotfound", p_id ) ).build();
 

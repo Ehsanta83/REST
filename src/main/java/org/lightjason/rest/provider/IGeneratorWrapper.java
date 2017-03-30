@@ -23,21 +23,36 @@
 
 package org.lightjason.rest.provider;
 
+
+import org.lightjason.agentspeak.generator.IGenerator;
+
+
 /**
- * functional interface for function that can throw errors
- *
- * @tparam U input value type
- * @tparam R return value type
+ * interface of generator wrapper for
+ * supplier and consumer access
  */
-@FunctionalInterface
-public interface IFunction<U, R>
+public interface IGeneratorWrapper<T extends IGenerator<?>>
 {
+
     /**
-     * apply call
-     *
-     * @param p_value input value
-     * @return return value
-     * @throws Exception is thrown on any exception
+     * runs the generating process
+     * with supplier and consumer calls
      */
-    R apply( final U p_value )throws Exception;
+    void generate();
+
+    /**
+     * runs the generating process
+     * with supplier and consumer calls
+     *
+     * @param p_number number of generated agents
+     */
+    void generate( final int p_number );
+
+    /**
+     * returns the generator object
+     *
+     * @return generator
+     */
+    T generator();
+
 }
