@@ -1,6 +1,7 @@
 # LightJason - REST-API
 
 ![Circle CI](https://circleci.com/gh/LightJason/REST.svg?style=shield)
+[![Coverage Status](https://coveralls.io/repos/github/LightJason/REST/badge.svg?branch=master)](https://coveralls.io/github/LightJason/REST?branch=master)
 
 
 ## Requirements
