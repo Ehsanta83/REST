@@ -25,7 +25,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>org.lightjason</groupId>
-    <artifactId>REST</artifactId>
+    <artifactId>rest</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <packaging>jar</packaging>
 
@@ -122,7 +122,7 @@
         -->
         <dependency>
             <groupId>org.lightjason</groupId>
-            <artifactId>AgentSpeak</artifactId>
+            <artifactId>agentspeak</artifactId>
             <version>0.0.1-SNAPSHOT</version>
         </dependency>
 
